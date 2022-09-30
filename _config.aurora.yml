@@ -9,15 +9,15 @@
 #！ @docs https://aurora.tridiamond.tech/guide/configuration.html
 #! ---------------------------------------------------------------
 site:
-  subtitle: Aurora's Blog
-  author: Aurora
-  nick: Auroral UI
+  subtitle: ChrisWood's Blog
+  author: ChrisWood-CN
+  nick: chriswood
   description:
   link: '/'
-  language: en
+  language: zh-CN
   multi_language: true
   logo: https://img-blog.csdnimg.cn/20210313122054101.png
-  avatar: https://img-blog.csdnimg.cn/20210313122054101.png
+  avatar: https://portrait.gitee.com/uploads/avatars/user/2172/6517189_chirswoodcn_1639811236.png!avatar200
   beian:
     number: ''
     link: ''
@@ -53,13 +53,13 @@ menu:
 #! @docs https://aurora.tridiamond.tech/guide/theme.html
 #! ---------------------------------------------------------------
 theme:
-  dark_mode: true
-  profile_shape: diamond # support `circle`, `diamond`, `rounded`
+  dark_mode: false
+  profile_shape: circle # support `circle`, `diamond`, `rounded`
   feature: true
   gradient:
-    color_1: '#24c6dc'
-    color_2: '#5433ff'
-    color_3: '#ff0099'
+    color_1: '#FFCC70'
+    color_2: '#C850C0'
+    color_3: '#4158D0'
 
 #! ---------------------------------------------------------------
 #! Social Configs
@@ -152,8 +152,8 @@ copy_protection:
 #! @docs https://aurora.tridiamond.tech/guide/site-meta.html#custom-meta
 #! ---------------------------------------------------------------
 aurora_bot:
-  enable: false
-  locale: en
+  enable: true
+  locale: cn
   bot_type: dia
   tips:
 
