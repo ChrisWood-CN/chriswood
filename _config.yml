@@ -3,13 +3,13 @@
 ## Source: https://github.com/hexojs/hexo/
 
 # Site
-title: Hexo
+title: chriswood
 subtitle: ''
-description: ''
-keywords:
-author: John Doe
-language: en
-timezone: ''
+description: 'chriswood self blogs and some sharing'
+keywords: chriswood blogs sharing
+author: chriswood
+language: zh-CN
+timezone: 'Asia/Shanghai'
 
 # URL
 ## Set your site url here. For example, if you use GitHub Page, set url as 'https://username.github.io/project'
@@ -40,7 +40,7 @@ external_link:
   exclude: ''
 filename_case: 0
 render_drafts: false
-post_asset_folder: false
+post_asset_folder: true #资源文件管理功能打开,资源文件夹将与文章文件一样名字。可以通过相对路径来引用
 relative_link: false
 future: true
 highlight:
@@ -97,7 +97,12 @@ ignore:
 # Extensions
 ## Plugins: https://hexo.io/plugins/
 ## Themes: https://hexo.io/themes/
-theme: landscape
+theme: aurora
+
+  ---------------------------------
+  Author: 三钻
+  Article is from: https://tridiamond.tech/
+  This content is shared under the CC BY-NC-SA 4.0 protocol (Non-Commercial)
 
 # Deployment
 ## Docs: https://hexo.io/docs/one-command-deployment
