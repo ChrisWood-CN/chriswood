@@ -46,7 +46,7 @@ Stack Overflow的创立者之一的 Jeff Atwood 在2007年提出了著名的 Atw
 
 - **排版引擎**（layout engine），也称为**浏览器引擎**（browser engine）、**页面渲染引擎**（rendering engine）或**样版引擎**。
 
-![图片](https://mmbiz.qpic.cn/mmbiz_jpg/O8xWXzAqXusHFTAWoQP8JvEX0wfuorw01HG0j1Yiay9ice38320ibvMu6XibFYJJcT53oH82BV4b6AUvb7kS9uiciaNw/640?wx_fmt=jpeg&wxfrom=5&wx_lazy=1&wx_co=1)WebKit main flow
+![图片](https://chriswood-blog.oss-cn-shanghai.aliyuncs.com/node/b326323caf6b410198ddc5cabfe5ab81.png)WebKit main flow
 
 但是在这个执行过程中，HTML解析的时候遇到了JavaScript标签，应该怎么办呢？
 
