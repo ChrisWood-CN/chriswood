@@ -41,7 +41,7 @@ external_link:
   exclude: ''
 filename_case: 0
 render_drafts: false
-post_asset_folder: true #资源文件管理功能打开,资源文件夹将与文章文件一样名字。可以通过相对路径来引用
+post_asset_folder: false #资源文件管理功能打开,资源文件夹将与文章文件一样名字。可以通过相对路径来引用
 relative_link: false
 future: true
 highlight:

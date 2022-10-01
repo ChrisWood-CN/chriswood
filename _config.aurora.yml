@@ -10,9 +10,9 @@
 #! ---------------------------------------------------------------
 site:
   subtitle: ChrisWood's Blog
-  author: ChrisWood-CN
+  author: ChrisWood
   nick: chriswood
-  description:
+  description: Think like an artist, code like an artisan.
   link: '/'
   language: zh-CN
   multi_language: true
@@ -31,13 +31,13 @@ site:
 #! ---------------------------------------------------------------
 authors:
   ##! example
-  # TriDiamond:
-  #   name: TriDiamond
-  #   avatar: https://up.enterdesk.com/edpic_source/44/ff/3d/44ff3d6bd2819d524facfcc33205d4cd.jpg
-  #   link: https://github.com/TriDiamond
-  #   description: 'Think like an artist, code like an artisan.'
-  #   socials:
-  #     github: https://tridiamond.tech
+#  TriDiamond:
+#    name: TriDiamond
+#    avatar: https://up.enterdesk.com/edpic_source/44/ff/3d/44ff3d6bd2819d524facfcc33205d4cd.jpg
+#    link: https://github.com/TriDiamond
+#    description: 'Think like an artist, code like an artisan.'
+#    socials:
+#      github: https://tridiamond.tech
 
 #! ---------------------------------------------------------------
 #! Menu Configs
@@ -66,6 +66,7 @@ theme:
 #! @docs https://aurora.tridiamond.tech/guide/social.html
 #! ---------------------------------------------------------------
 socials:
+  github: 'https://github.com/ChrisWood-CN'
   customs:
   ##! Example:
   ##! --- Using SVG
@@ -79,9 +80,9 @@ socials:
   #   link: https://live.bilibili.com/22619211
 
   ##! --- Using FontAwesome
-  # book:
-  #   icon: far fa-address-book
-  #   link: https://live.bilibili.com/22619211
+#    book:
+#      icon: far fa-address-book
+#      link: https://live.bilibili.com/22619211
 
 #! ---------------------------------------------------------------
 #! Site Meta Configs
@@ -107,7 +108,7 @@ gitalk:
   clientSecret: ''
   repo: 'dev-blog-comments'
   owner: 'TriDiamond'
-  admin: ['TriDiamond']
+  admin: [ 'TriDiamond' ]
   id: uid
   language: en
   distractionFreeMode: true
@@ -125,8 +126,8 @@ valine:
   visitor: true
   lang: en
   avatarForce: false
-  meta: ['nick', 'mail']
-  requiredFields: []
+  meta: [ 'nick', 'mail' ]
+  requiredFields: [ ]
   admin: 'TriDiamond'
   recentComment: true
 
