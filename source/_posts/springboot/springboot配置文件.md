@@ -4,7 +4,7 @@ date: 2022-10-08 15:55:43
 categories: springboot
 tags: springboot
 ---
-##springboot配置文件
+## springboot配置文件
 在springboot 项目中一般默认的配置文件是application.properties,但是实际项目中我们一般会使用application.yml文件
 ### yml文件读取顺序
 #### 存放目录

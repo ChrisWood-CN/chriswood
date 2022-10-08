@@ -10,7 +10,7 @@ tags: Nginx
 
 ``` shell
 #强制停止Nginx
-pkill -9 nginx 
+kill -9 nginx 
 start nginx
 nginx -s quit
 nginx -s reload
