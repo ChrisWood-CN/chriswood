@@ -104,9 +104,9 @@ site_meta:
 gitalk:
   enable: true
   autoExpand: true
-  clientID: 'b5ac6b121a8e15bc07a2'
-  clientSecret: '55854a782879707f3881e20c4343c935c25fd114'
-  repo: 'chriswood-cn.github.io'
+  clientID: b5ac6b121a8e15bc07a2
+  clientSecret: 55854a782879707f3881e20c4343c935c25fd114
+  repo: chriswood-cn.github.io
   owner: 'ChrisWood-CN'
   admin: [ 'ChrisWood-CN' ]
   id: uid
@@ -128,7 +128,7 @@ valine:
   avatarForce: false
   meta: [ 'nick', 'mail' ]
   requiredFields: [ ]
-  admin: 'TriDiamond'
+  admin: 'ChrisWood-CN'
   recentComment: true
 
 # Enable Busuanzi statistic plugin
