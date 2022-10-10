@@ -1,8 +1,8 @@
 ---
 title: Java高并发专题-JUC线程池
 date: 2022-10-08 16:55:43
-categories: JUC
-tags: JUC
+categories: Java高并发专题
+tags: Java高并发专题
 ---
 ### 线程池
 #### Executor框架接口
