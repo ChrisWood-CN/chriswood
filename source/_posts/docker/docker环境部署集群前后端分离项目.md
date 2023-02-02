@@ -80,6 +80,10 @@ vi /etc/sysctl.conf
 #重启网络服务
 systemctl  restart network
 ```
+16.查看容器启动日志
+~~~
+docker logs 容器id/name
+~~~
 ### 2.PXC集群
 1.安装PXC镜像
 ```shell script
