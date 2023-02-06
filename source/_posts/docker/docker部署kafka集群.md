@@ -10,7 +10,7 @@ tags:
 ---
 ## docker搭建Zookeeper单机+kafka集群
 ### 环境
-Linux系统：centos 8
+Linux系统：centos 7.6
 Zookeeper：wurstmeister/zookeeper
 Kafka：wurstmeister/kafka
 
