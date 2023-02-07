@@ -1,11 +1,12 @@
 ---
-title: docker部署hbase date: 2023-02-06 15:22:50 categories:
-
+title: docker部署hbase
+date: 2023-02-06 15:22:50 
+categories:
 - docker
-- hbase tags:
+- hbase 
+tags:
 - docker
 - hbase
-
 ---
 
 ## docker搭建hbase
