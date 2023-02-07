@@ -66,7 +66,7 @@ theme:
 #! @docs https://aurora.tridiamond.tech/guide/social.html
 #! ---------------------------------------------------------------
 socials:
-  github: 'https://github.com/ChrisWood-CN'
+  github: 'https://github.com/chriswoodcn'
   customs:
   ##! Example:
   ##! --- Using SVG
@@ -107,8 +107,8 @@ gitalk:
   clientID: 'b5ac6b121a8e15bc07a2'
   clientSecret: '55854a782879707f3881e20c4343c935c25fd114'
   repo: 'chriswood-cn.github.io'
-  owner: 'ChrisWood-CN'
-  admin: ['ChrisWood-CN']
+  owner: 'chriswoodcn'
+  admin: ['chriswoodcn']
   id: uid
   language: en
   distractionFreeMode: true
@@ -129,7 +129,7 @@ valine:
   avatarForce: false
   meta: [ 'nick', 'mail' ]
   requiredFields: [ ]
-  admin: 'ChrisWood-CN'
+  admin: 'chriswoodcn'
   recentComment: true
 
 # Enable Busuanzi statistic plugin
