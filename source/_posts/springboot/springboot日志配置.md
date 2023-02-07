@@ -167,6 +167,7 @@ logging:
 ~~~xml
 <contextName>pethouse-server</contextName>
 ~~~
+
 ### 子节点三 property 设置变量
 
 - 1.用来定义变量值的标签， 有两个属性，name和value；其中name的值是变量的名称，value的值时变量定义的值。
@@ -328,9 +329,10 @@ ThresholdFilter为系统定义的拦截器，例如我们用ThresholdFilter来�
   <appender-ref ref="file_error"/>
 </appender>
 ~~~
+
 ### 子节点五 logger
 
-##### 属性
+#### 属性
 
 - name:用来指定受此logger约束的某一个包或者具体的某一个类。
 - level:用来设置打印级别，大小写无关：TRACE, DEBUG, INFO, WARN, ERROR, ALL 和 OFF，还有一个特俗值INHERITED或者同义词NULL，
@@ -342,7 +344,7 @@ ThresholdFilter为系统定义的拦截器，例如我们用ThresholdFilter来�
 <logger>仅有一个name属性，一个可选的level和一个可选的addtivity属性
 ~~~
 
-##### 用法
+#### 用法
 
 - 1.带有logger的配置，不指定级别，不指定appender，logback-spring.xml增加 logger 配置如下：
 
