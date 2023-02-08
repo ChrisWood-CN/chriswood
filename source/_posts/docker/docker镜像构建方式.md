@@ -105,3 +105,25 @@ docker tag chriswoodcn/centos7_java8_zh chriswoodcn/centos7_java8_zh:1.1.0
 ~~~shell
 docker push chriswoodcn/centos7_java8_zh:1.1.0
 ~~~
+### 五、多阶段构建
+多阶段构建指在Dockerfile中使用多个FROM语句，每个FROM指令都可以使用不同的基础镜像，并且是一个独立的子构建阶段。
+使用多阶段构建打包Java应用具有构建安全、构建速度快、镜像文件体积小等优点
+~~~dockerfile
+#例子
+#First statge : define basic image for build
+FROM maven:3.6.0-jdk-8-alpine AS mj
+#add pom.xml and source code
+ADD ./pom.xml pom.xml
+ADD ./src src/
+#build code and generate jar package
+RUN mvn clean package
+
+#Second stage: define mini image of java
+From openjdk:8-jre-alpine
+#copy jar from the first stage
+COPY --from=mj target/my-app-1.0-SNAPSHOT.jar my-app-1.0-SNAPSHOT.jar
+#expose service port
+EXPOSE 8080
+#start service
+CMD ["java", "-jar", "my-app-1.0-SNAPSHOT.jar"]
+~~~
