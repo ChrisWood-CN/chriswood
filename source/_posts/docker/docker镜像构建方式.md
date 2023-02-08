@@ -13,8 +13,8 @@ tags: docker
 基于已有容器构建镜像主要是通过docker commit命令来构建新的镜像，语法规则如下：
 ~~~shell
 docker commit [OPTIONS] CONTAINER [REPOSITORY:TAG]
-docker commit -m "centos7+java8+zh" -a "chriswoodcn" 4b40b9568be3 centos7_java8_zh:1.0
-# 上面-m选项指定了新镜像的提交信息，-a标注作者信息，4b40b9568be3是容器ID，centos7_java8_zh:1.0是指定的新镜像名称和版本。
+docker commit -m "centos7+java8+zh" -a "chriswoodcn" 4b40b9568be3 centos7_java8_zh:1.0.0
+# 上面-m选项指定了新镜像的提交信息，-a标注作者信息，4b40b9568be3是容器ID，centos7_java8_zh:1.0.0是指定的新镜像名称和版本。
 ~~~
 
 ## 二、基于本地模板导入
@@ -84,5 +84,24 @@ ADD ./target/fitness-admin.jar ./app.jar
 ENTRYPOINT ["java","-Djava.security.egd=file:/dev/./urandom", "-Dserver.port=${SERVER_PORT}","-jar","-Dspring.profiles.active=${ACTIVE}","-Dfile.encoding=UTF-8","app.jar"]
 ~~~
 ~~~shell
-docker build -f dockerfile -t fitness-server:1.0.0
+docker build -f dockerfile -t fitness-server:1.0.0 .
+~~~
+## 四、将本地Docker镜像上传到Docker Hub上
+1.创建并登录https://hub.docker.com/
+~~~shell
+docker login --username=chriswoodcn
+# 提示输入密码，正确输入密码后，提示Login Succeeded
+~~~
+2.构建镜像
+~~~shell
+docker build -f centos7_java8_zh_dockerfile -t chriswoodcn/centos7_java8_zh  .
+~~~
+3.网页登录Docker Hub，创建仓库chriswoodcn/centos7_java8_zh
+4.给镜像打标签
+~~~shell
+docker tag chriswoodcn/centos7_java8_zh chriswoodcn/centos7_java8_zh:1.1.0
+~~~
+5.上传镜像到Docker Hub上
+~~~shell
+docker push chriswoodcn/centos7_java8_zh:1.1.0
 ~~~
