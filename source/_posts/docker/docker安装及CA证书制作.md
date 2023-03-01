@@ -27,15 +27,6 @@ openssl genrsa -out server-key.pem 4096
 # $HOST可以是服务器ip地址也可以是域名地址
 openssl req -subj "/CN=124.221.83.80" -sha256 -new -key server-key.pem -out server.csr
 
-openssl req -subj "/CN=47.101.213.157" -sha256 -new -key server-key.pem -out server.csr
-echo subjectAltName = IP:47.101.213.157,IP:0.0.0.0 >> extfile.cnf
-
-openssl req -subj "/CN=8.209.98.122" -sha256 -new -key server-key.pem -out server.csr
-echo subjectAltName = IP:8.209.98.122,IP:0.0.0.0 >> extfile.cnf
-
-openssl req -subj "/CN=8.209.74.127" -sha256 -new -key server-key.pem -out server.csr
-echo subjectAltName = IP:8.209.74.127,IP:0.0.0.0 >> extfile.cnf
-
 # 使用 CA 签署公钥
 # 允许所有IP远程访问，也可以只允许指定的IP访问 echo subjectAltName = DNS:$HOST,IP:10.10.10.20,IP:10.10.10.30 >> extfile.cnf
 echo subjectAltName = IP:124.221.83.80,IP:0.0.0.0 >> extfile.cnf
