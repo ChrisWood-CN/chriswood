@@ -18,7 +18,8 @@ sudo yum install docker-ce docker-ce-cli containerd.io
 ### CA证书制作
 ~~~shell
 # 创建文件夹
-mkdir -d /mydata/certs/docker
+mkdir -p /mydata/certs/docker
+cd /mydata/certs/docker
 # 使用OpenSSL生成 CA 私钥和公钥文件
 openssl genrsa -aes256 -out ca-key.pem 4096
 openssl req -new -x509 -days 365 -key ca-key.pem -sha256 -out ca.pem
@@ -26,11 +27,9 @@ openssl genrsa -out server-key.pem 4096
 # openssl req -subj "/CN=$HOST" -sha256 -new -key server-key.pem -out server.csr
 # $HOST可以是服务器ip地址也可以是域名地址
 openssl req -subj "/CN=124.221.83.80" -sha256 -new -key server-key.pem -out server.csr
-
 # 使用 CA 签署公钥
 # 允许所有IP远程访问，也可以只允许指定的IP访问 echo subjectAltName = DNS:$HOST,IP:10.10.10.20,IP:10.10.10.30 >> extfile.cnf
 echo subjectAltName = IP:124.221.83.80,IP:0.0.0.0 >> extfile.cnf
-
 # 将 Docker 守护程序密钥的扩展使用属性设置为仅用于服务器身份验证
 echo extendedKeyUsage = serverAuth >> extfile.cnf
 # 生成签名证书

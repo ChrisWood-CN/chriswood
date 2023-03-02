@@ -4,9 +4,10 @@ date: 2023-02-09 11:12:06
 categories: docker-repository
 tags: docker-repository
 ---
-## alpine_java8_zh
-### v1.0.0
-#### 1.dockerfile
+## docker镜像制作
+### alpine_java8_zh
+#### v1.0.0
+##### 1.dockerfile
 ~~~dockerfile
 FROM openjdk:8-jdk-alpine
 
@@ -32,7 +33,7 @@ RUN cat locale.md | xargs -i /usr/glibc-compat/bin/localedef -i {} -f UTF-8 {}.U
 ENV LANG=en_US.UTF-8 \
     LANGUAGE=en_US.UTF-8
 ~~~
-#### 2.locale.md
+##### 2.locale.md
 ~~~markdown
 en_AG
 en_AU
@@ -57,7 +58,7 @@ zh_SG
 zh_TW
 zu_ZA
 ~~~
-#### 3.构建及验证
+##### 3.构建及验证
 ~~~shell
 # 打包通过构建文件构建的镜像
 docker build -f alpine_java8_zh -t chriswoodcn/alpine_java8_zh:1.0.0
