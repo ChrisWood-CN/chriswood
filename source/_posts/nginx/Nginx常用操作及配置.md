@@ -304,8 +304,10 @@ location ^~ /scootor/ {
 #请求：http://example.taotaozn.com/scootor/index.html
 #实际访问：/usr/local/nginx/html/scootor/index.html文件
 ~~~
-#### rewrite
+
+### rewrite
 语法：rewrite regex replacement flag
+应用于：server location location中的if
 ~~~
 location  /images {
     rewrite ^/images/(.*\.jpg)$ /imgs/$1 break;
@@ -367,7 +369,7 @@ if ($http_user_agent ~ Chrome) {
 这个指令在referer头的基础上为 $invalid_referer 变量赋值，其值为0或1。
 如果valid_referers列表中没有Referer头的值， $invalid_referer将被设置为1
 应用于：server和location
-###### 防盗链案例
+##### 防盗链案例
 ~~~
 location ~* \.(jpg|gif|jpeg|png)$ {
   valid_referers none blocked www.test.com;
