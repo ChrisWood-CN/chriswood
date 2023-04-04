@@ -15,6 +15,25 @@ sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/dock
 sudo yum-config-manager --add-repo http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
 sudo yum install docker-ce docker-ce-cli containerd.io
 ~~~
+###docker卸载
+~~~
+rm -rf /etc/docker
+rm -rf /run/docker
+rm -rf /var/lib/dockershim
+rm -rf /var/lib/docker
+
+ps -ef|grep docker
+kill -9 pid
+
+yum list installed | grep docker
+yum remove  containerd.io.x86_64
+
+yum remove docker-ce.x86_64
+yum remove docker-ce-cli.x86_64
+yum remove docker-ce-rootless-extras.x86_64
+yum remove docker-compose-plugin.x86_64
+yum remove docker-scan-plugin.x86_64
+~~~
 ### CA证书制作
 ~~~shell
 # 创建文件夹

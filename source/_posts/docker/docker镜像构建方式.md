@@ -147,3 +147,7 @@ EXPOSE 8080
 #start service
 CMD ["java", "-jar", "my-app-1.0-SNAPSHOT.jar"]
 ~~~
+
+~~~
+docker run --name srs-server --rm -it -p 1935:1935 -p 1985:1985 -p 8080:8080 registry.cn-hangzhou.aliyuncs.com/ossrs/srs:4 ./objs/srs -c conf/docker.conf
+~~~
