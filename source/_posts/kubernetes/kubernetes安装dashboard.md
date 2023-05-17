@@ -33,7 +33,7 @@ kubectl delete pod kubernetes-dashboard-6ff574dd47-gfzq6  -n kubernetes-dashboar
 > https://github.com/kubernetes/dashboard/blob/master/docs/user/access-control/creating-sample-user.md
 
 admin-user.yaml
-~~~yaml 
+~~~yaml
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -41,7 +41,7 @@ metadata:
   namespace: kubernetes-dashboard
 ~~~
 admin-user-role-binding.yaml
-~~~
+~~~yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
@@ -55,10 +55,36 @@ subjects:
   name: admin-user
   namespace: kubernetes-dashboard
 ~~~
+或者放在一起使用 dashboard-admin-user.yaml
+~~~yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: admin-user
+  namespace: kubernetes-dashboard
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: admin-user
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+  - kind: ServiceAccount
+    name: admin-user
+    namespace: kubernetes-dashboard
+~~~
 ~~~
 kubectl apply -f admin-user.yaml
 kubectl apply -f admin-user-role-binding.yaml
 #获取token
 kubectl -n kubernetes-dashboard create token admin-user
+~~~
+~~~
+#Remove the admin ServiceAccount and ClusterRoleBinding.
+kubectl -n kubernetes-dashboard delete serviceaccount admin-user
+kubectl -n kubernetes-dashboard delete clusterrolebinding admin-user
 ~~~
 > 官方地址 https://github.com/kubernetes/dashboard
