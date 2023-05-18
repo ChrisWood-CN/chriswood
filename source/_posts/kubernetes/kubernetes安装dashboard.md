@@ -1,8 +1,9 @@
 ---
 title: kubernetes安装dashboard
 date: 2023-05-17 15:07:11
-tags: 
-- kubernetes 
+categories: kubernetes
+tags:
+- kubernetes
 - dashboard
 ---
 ### 安装dashboard

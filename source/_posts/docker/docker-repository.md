@@ -1,7 +1,7 @@
 ---
 title: docker-repository
 date: 2023-02-09 11:12:06
-categories: docker-repository
+categories: docker
 tags: docker-repository
 ---
 ## docker镜像制作

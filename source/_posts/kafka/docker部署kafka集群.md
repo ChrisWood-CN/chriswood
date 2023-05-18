@@ -1,9 +1,7 @@
 ---
 title: docker部署kafka集群
 date: 2023-02-02 15:28:39
-categories: 
-- docker
-- kafka
+categories: kafka
 tags:
 - docker
 - kafka

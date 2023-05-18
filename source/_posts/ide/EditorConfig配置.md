@@ -1,6 +1,8 @@
 ---
 title: EditorConfig配置
 date: 2023-05-18 08:08:20
+categories:
+- IDE
 tags: 
 - IDE 
 - EditorConfig

@@ -1,9 +1,7 @@
 ---
 title: RedisTemplate的opsFor操作
 date: 2023-03-07 10:04:31
-categories:
-- Redisson
-- RedisTemplate
+categories: Redis
 tags:
 - Redisson
 - RedisTemplate

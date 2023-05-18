@@ -1,9 +1,7 @@
 ---
 title: kafka学习
 date: 2023-02-02 16:21:26
-categories:
-- kafka
-- zookeeper
+categories: kafka
 tags:
 - kafka
 - zookeeper

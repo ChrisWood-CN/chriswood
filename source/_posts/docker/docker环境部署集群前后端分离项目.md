@@ -2,7 +2,7 @@
 title: docker环境部署集群前后端分离项目
 date: 2022-10-12 16:05:29
 categories: docker
-tags: docker
+tags: docker环境部署
 ---
 # docker环境部署集群前后端分离项目
 ## 一、基础

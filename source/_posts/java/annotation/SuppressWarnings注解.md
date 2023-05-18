@@ -1,7 +1,11 @@
 ---
 title: SuppressWarnings注解
 date: 2023-04-04 13:25:46
-tags: Java Spring
+categories:
+- Java
+tags: 
+- Java
+- SuppressWarnings
 ---
 
 # SuppressWarnings注解

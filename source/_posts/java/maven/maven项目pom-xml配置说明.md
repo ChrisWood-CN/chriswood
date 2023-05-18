@@ -1,7 +1,10 @@
 ---
 title: maven项目pom.xml配置说明 
-date: 2023-05-18 13:06:21 
+date: 2023-05-18 13:06:21
+categories:
+- maven
 tags:
+- Java
 - maven 
 - pom
 ---

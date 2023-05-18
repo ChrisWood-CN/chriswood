@@ -2,7 +2,7 @@
 title: docker安装及CA证书制作
 date: 2023-03-01 15:37:24
 categories: docker
-tags: docker
+tags: dockerCA证书
 ---
 ## 环境
 云服务器centOS 7.6 64位
