@@ -1,9 +1,7 @@
 ---
 title: springboot日志配置 
 date: 2023-02-07 14:59:47 
-categories:
-- springboot
-- springboot配置 
+categories: springboot
 tags:
 - springboot
 - springboot配置

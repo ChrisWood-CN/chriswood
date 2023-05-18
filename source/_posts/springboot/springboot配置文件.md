@@ -2,9 +2,7 @@
 title: springboot配置文件 
 date: 2022-10-08 15:55:43 
 updated: 2023-02-07 15:03:00 
-categories:
-- springboot
-- springboot配置 
+categories: springboot 
 tags:
 - springboot
 - springboot配置
