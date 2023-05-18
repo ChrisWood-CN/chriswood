@@ -1,7 +1,9 @@
 ---
 title: kubernetes安装dashboard
 date: 2023-05-17 15:07:11
-tags: kubernetes dashboard
+tags: 
+- kubernetes 
+- dashboard
 ---
 ### 安装dashboard
 1.根据recommended.yaml安装

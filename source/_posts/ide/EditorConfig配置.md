@@ -1,7 +1,9 @@
 ---
 title: EditorConfig配置
 date: 2023-05-18 08:08:20
-tags: IDE EditorConfig
+tags: 
+- IDE 
+- EditorConfig
 ---
 ### 1 EditorConfig插件
 https://editorconfig.org/#pre-installed

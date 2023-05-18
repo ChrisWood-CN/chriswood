@@ -1,7 +1,9 @@
 ---
 title: kubeadm搭建k8s集群
 date: 2023-05-16 13:42:11 
-tags: kubeadm kubernetes
+tags: 
+- kubeadm 
+- kubernetes
 ---
 
 ### 环境准备
