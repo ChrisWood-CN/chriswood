@@ -5,11 +5,11 @@ tags: kubernetes dashboard
 ---
 ### 安装dashboard
 1.根据recommended.yaml安装
-~~~
+~~~shell
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.7.0/aio/deploy/recommended.yaml
 ~~~
 2.修改为NodePort
-~~~
+~~~shell
 kubectl get pods --namespace=kubernetes-dashboard -o wide
 kubectl --namespace=kubernetes-dashboard get service kubernetes-dashboard
 kubectl --namespace=kubernetes-dashboard edit service kubernetes-dashboard
@@ -17,7 +17,7 @@ kubectl --namespace=kubernetes-dashboard edit service kubernetes-dashboard
 kubectl --namespace=kubernetes-dashboard get service kubernetes-dashboard
 ~~~
 3.生成证书
-~~~
+~~~shell
 mkdir key && cd key
 openssl genrsa -out dashboard.key 2048
 openssl req -new -out dashboard.csr -key dashboard.key -subj '/CN=139.196.93.92'
@@ -29,7 +29,7 @@ kubectl create secret generic kubernetes-dashboard-certs --from-file=dashboard.k
 kubectl get pod -n kubernetes-dashboard
 kubectl delete pod kubernetes-dashboard-6ff574dd47-gfzq6  -n kubernetes-dashboard
 ~~~
-3.参考官方AccessControl配置用户
+4.获取token,参考官方AccessControl配置用户,然后生成token
 > https://github.com/kubernetes/dashboard/blob/master/docs/user/access-control/creating-sample-user.md
 
 admin-user.yaml
@@ -57,6 +57,7 @@ subjects:
 ~~~
 或者放在一起使用 dashboard-admin-user.yaml
 ~~~yaml
+---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -76,13 +77,13 @@ subjects:
     name: admin-user
     namespace: kubernetes-dashboard
 ~~~
-~~~
+~~~shell
 kubectl apply -f admin-user.yaml
 kubectl apply -f admin-user-role-binding.yaml
 #获取token
 kubectl -n kubernetes-dashboard create token admin-user
 ~~~
-~~~
+~~~shell
 #Remove the admin ServiceAccount and ClusterRoleBinding.
 kubectl -n kubernetes-dashboard delete serviceaccount admin-user
 kubectl -n kubernetes-dashboard delete clusterrolebinding admin-user

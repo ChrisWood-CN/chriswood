@@ -6,7 +6,7 @@ tags: kubeadm kubernetes
 
 ### 环境准备
 
-~~~
+~~~shell
 # 临时
 systemctl stop firewalld
 # 永久
@@ -46,7 +46,7 @@ ntpdate time.windows.com
 
 1.在所有节点上安装Docker和kubeadm
 
-~~~
+~~~shell
 sudo yum update -y
 sudo yum install -y yum-utils
 sudo yum-config-manager --add-repo http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
@@ -65,9 +65,10 @@ systemctl restart docker
 containerd config default > /etc/containerd/config.toml
 ### 修改配置文件
 sed -i 's#SystemdCgroup = false#SystemdCgroup = true#g' /etc/containerd/config.toml
+# containerd sandbox_image使用阿里镜像
 sed -i 's#sandbox_image = "registry.k8s.io/pause:3.6"#sandbox_image="registry.cn-hangzhou.aliyuncs.com/google_containers/pause:3.6"#g' /etc/containerd/config.toml
-### 配置镜像加速
 sed -i 's#config_path = ""#config_path = "/etc/containerd/certs.d"#g' /etc/containerd/config.toml
+### 配置镜像加速
 mkdir -p /etc/containerd/certs.d/docker.io
 cat > /etc/containerd/certs.d/docker.io/hosts.toml << EOF
 server = "https://registry-1.docker.io"
@@ -76,7 +77,7 @@ server = "https://registry-1.docker.io"
 EOF
 ## 启动生效
 systemctl daemon-reload ; systemctl enable containerd --now
-
+## kubernetes.repo
 vi /etc/yum.repos.d/kubernetes.repo
 [kubernetes]
 name=Kubernetes
@@ -107,7 +108,7 @@ sudo kubeadm config print join-defaults > join-default.yaml
 
 拉取镜像脚本kubeadm-config-download.sh
 
-~~~
+~~~shell
 #!/bin/bash
 images=(
     kube-apiserver:v1.26.4
@@ -127,11 +128,11 @@ done
 
 2.部署Kubernetes Master
 
-~~~
+~~~shell
 #kubeadm init --apiserver-advertise-address 192.168.0.143 --image-repository registry.cn-hangzhou.aliyuncs.com/google_containers --kubernetes-version v1.26.4 --service-cidr=10.10.0.0/16 --pod-network-cidr=10.20.0.0/16
 #修改init-default.yaml配置
 kubeadm init --config init-default.yaml
-
+## 过程省略，最后出现下面这段
 Your Kubernetes control-plane has initialized successfully!
 
 To start using your cluster, you need to run the following as a regular user:
@@ -143,7 +144,11 @@ To start using your cluster, you need to run the following as a regular user:
 Alternatively, if you are the root user, you can run:
 
   export KUBECONFIG=/etc/kubernetes/admin.conf
-
+## 按照要求进行shell命令
+## mkdir -p $HOME/.kube
+## sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+## sudo chown $(id -u):$(id -g) $HOME/.kube/config
+## export KUBECONFIG=/etc/kubernetes/admin.conf
 You should now deploy a pod network to the cluster.
 Run "kubectl apply -f [podnetwork].yaml" with one of the options listed at:
   https://kubernetes.io/docs/concepts/cluster-administration/addons/
@@ -151,11 +156,12 @@ Run "kubectl apply -f [podnetwork].yaml" with one of the options listed at:
 Then you can join any number of worker nodes by running the following on each as root:
 
 kubeadm join 192.168.0.143:6443 --token abcdef.0123456789abcdef --discovery-token-ca-cert-hash sha256:e3d70eb9918d1d3fd41dc636859c15f5f2aed6694a0b92615dba908b9fc0ab80
+## node节点加入集群需要使用上面这段
 ~~~
 
 - 重置方法
 
-~~~
+~~~shell
 # 重置master
 kubeadm reset
 kubeadm reset -f
@@ -167,8 +173,8 @@ rm -rf /etc/cni/net.d
 ipvsadm --clear
 ~~~
 
-4.部署Kubernetes Node，将节点加入Kubernetes集群中
-~~~
+3.部署Kubernetes Node，将节点加入Kubernetes集群中
+~~~shell
 #重复步骤1
 #使用步骤二得到的token join
 kubeadm join 192.168.0.143:6443 --token abcdef.0123456789abcdef --discovery-token-ca-cert-hash sha256:e3d70eb9918d1d3fd41dc636859c15f5f2aed6694a0b92615dba908b9fc0ab80
@@ -177,16 +183,16 @@ kubeadm token create --print-join-command
 ~~~
 > https://kubernetes.io/zh-cn/docs/reference/setup-tools/kubeadm/kubeadm-token/
 
-3.部署容器网络插件
-~~~
+4.kubernetes集群搭建完毕，开始部署容器网络插件，完成coredns启动
+~~~shell
 wget https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kubeflannel.yml
 vim kube-flannel.yml
 #根据具体情况修改，这里networking 修改为192.168.0.0/16
 kubectl apply -f kube-flannel.yml
 kubectl get pods -A -owide
 ~~~
-Master 节点默认是不允许部署非系统的 pod，我们可以通过删除污点的方式运行部署
-~~~
+> Master 节点默认是不允许部署非系统的 pod，我们可以通过删除污点的方式运行部署
+~~~shell
 #查看污点
 kubectl describe node | grep Taints
 #删除污点
