@@ -1800,8 +1800,8 @@ spec:
               protocol: TCP
           resources:
             requests:
-              cpu: 500m
-              memory: 1Gi
+              cpu: 250m
+              memory: 512Mi
           volumeMounts:
             - mountPath: /var/lib/mysql
               name: volume-myql
@@ -1876,8 +1876,8 @@ spec:
               protocol: TCP
           resources:
             requests:
-              cpu: 500m
-              memory: 1Gi
+              cpu: 250m
+              memory: 512Mi
           volumeMounts:
             - mountPath: /data
               subPath: redis/data
@@ -1935,11 +1935,11 @@ spec:
       containers:
         - name: activemq
           image: registry-vpc.cn-shanghai.aliyuncs.com/taotaodev/pay-activemq:v2.1.0
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           resources:
             requests:
-              cpu: 500m
-              memory: 1Gi
+              cpu: 250m
+              memory: 512Mi
           ports:
             - containerPort: 1883
               name: activemq1
@@ -1995,25 +1995,25 @@ spec:
   type: ClusterIP
 
 ---
-#部署pay-manager
+#部署pay-server
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: pay-manager
+  name: pay-server
   namespace: pay
   labels:
     project: pay
-    app: pay-manager
+    app: pay-server
 spec:
   selector:
     matchLabels:
-      app: pay-manager
+      app: pay-server
   template:
     metadata:
       labels:
         project: pay
-        app: pay-manager
+        app: pay-server
     spec:
       initContainers:
         - name: init-redis
@@ -2029,126 +2029,16 @@ spec:
           imagePullPolicy: IfNotPresent
           command: [ 'sh', '-c', 'until nslookup svc-pay-activemq.pay.svc.cluster.local; do echo waiting for redis; sleep 3; done;' ]
       containers:
-        - name: pay-manager
-          image: registry.cn-shanghai.aliyuncs.com/taotaodev/pay-manager:v2.1.0
-          imagePullPolicy: IfNotPresent
-          readinessProbe:
-            failureThreshold: 3
-            httpGet:
-              port: 9217
-              scheme: HTTP
-            initialDelaySeconds: 60
-            periodSeconds: 10
-            successThreshold: 1
-            timeoutSeconds: 1
-          livenessProbe:
-            failureThreshold: 5
-            httpGet:
-              port: 9217
-              scheme: HTTP
-            initialDelaySeconds: 60
-            periodSeconds: 30
-            successThreshold: 1
-            timeoutSeconds: 5
+        - name: pay-server
+          image: registry-vpc.cn-shanghai.aliyuncs.com/taotaodev/pay-server:v2.1.0
+          imagePullPolicy: Always
           ports:
+            - containerPort: 9216
+              name: payment
+              protocol: TCP
             - containerPort: 9217
               name: manager
               protocol: TCP
-          resources:
-            requests:
-              cpu: 500m
-              memory: 1Gi
-          volumeMounts:
-            - mountPath: /workspace/logs
-              subPath: manager/logs
-              name: volumes-manager
-            - mountPath: /workspace/application.yml
-              subPath: application.yml
-              name: volumes-manager-config
-      volumes:
-        - name: volumes-manager
-          persistentVolumeClaim:
-            claimName: pvc-pay-cache
-        - name: volumes-manager-config
-          configMap:
-            name: pay-manager-config
-
-
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: svc-pay-manager
-  labels:
-    project: pay
-    app: pay-manager
-  namespace: pay
-spec:
-  ports:
-    - port: 9217
-      protocol: TCP
-      targetPort: 9217
-  selector:
-    app: pay-manager
-  type: ClusterIP
-
----
-#部署pay-merchant
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: pay-merchant
-  namespace: pay
-  labels:
-    project: pay
-    app: pay-merchant
-spec:
-  selector:
-    matchLabels:
-      app: pay-merchant
-  template:
-    metadata:
-      labels:
-        project: pay
-        app: pay-merchant
-    spec:
-      initContainers:
-        - name: init-redis
-          image: busybox:latest
-          imagePullPolicy: IfNotPresent
-          command: [ 'sh', '-c', 'until nslookup svc-pay-redis.pay.svc.cluster.local; do echo waiting for redis; sleep 3; done;' ]
-        - name: init-mysql
-          image: busybox:latest
-          imagePullPolicy: IfNotPresent
-          command: [ 'sh', '-c', 'until nslookup svc-pay-mysql.pay.svc.cluster.local; do echo waiting for redis; sleep 3; done;' ]
-        - name: init-activemq
-          image: busybox:latest
-          imagePullPolicy: IfNotPresent
-          command: [ 'sh', '-c', 'until nslookup svc-pay-activemq.pay.svc.cluster.local; do echo waiting for redis; sleep 3; done;' ]
-      containers:
-        - name: pay-merchant
-          image: registry.cn-shanghai.aliyuncs.com/taotaodev/pay-merchant:v2.1.0
-          imagePullPolicy: IfNotPresent
-          readinessProbe:
-            failureThreshold: 3
-            httpGet:
-              port: 9218
-              scheme: HTTP
-            initialDelaySeconds: 60
-            periodSeconds: 10
-            successThreshold: 1
-            timeoutSeconds: 1
-          livenessProbe:
-            failureThreshold: 5
-            httpGet:
-              port: 9218
-              scheme: HTTP
-            initialDelaySeconds: 60
-            periodSeconds: 30
-            successThreshold: 1
-            timeoutSeconds: 5
-          ports:
             - containerPort: 9218
               name: merchant
               protocol: TCP
@@ -2157,154 +2047,110 @@ spec:
               cpu: 500m
               memory: 1Gi
           volumeMounts:
-            - mountPath: /workspace/logs
+            - mountPath: /workspace/payment/logs
+              subPath: payment/logs
+              name: volumes-payment
+            - mountPath: /workspace/manager/logs
+              subPath: manager/logs
+              name: volumes-manager
+            - mountPath: /workspace/merchant/logs
               subPath: merchant/logs
               name: volumes-merchant
-            - mountPath: /workspace/application.yml
+            - mountPath: /workspace/payment/application.yml
+              subPath: application.yml
+              name: volumes-payment-config
+            - mountPath: /workspace/manager/application.yml
+              subPath: application.yml
+              name: volumes-manager-config
+            - mountPath: /workspace/merchant/application.yml
               subPath: application.yml
               name: volumes-merchant-config
       volumes:
-        - name: volumes-merchant
+        - name: volumes-payment
           persistentVolumeClaim:
             claimName: pvc-pay-cache
-        - name: volumes-merchant-config
-          configMap:
-            name: pay-merchant-config
-
-
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: svc-pay-merchant
-  labels:
-    project: pay
-    app: pay-merchant
-  namespace: pay
-spec:
-  ports:
-    - port: 9218
-      protocol: TCP
-      targetPort: 9218
-  selector:
-    app: pay-merchant
-  type: ClusterIP
----
-#部署pay-payment
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: pay-payment
-  namespace: pay
-  labels:
-    project: pay
-    app: pay-payment
-spec:
-  selector:
-    matchLabels:
-      app: pay-payment
-  template:
-    metadata:
-      labels:
-        project: pay
-        app: pay-payment
-    spec:
-      initContainers:
-        - name: init-redis
-          image: busybox:latest
-          imagePullPolicy: IfNotPresent
-          command: [ 'sh', '-c', 'until nslookup svc-pay-redis.pay.svc.cluster.local; do echo waiting for redis; sleep 3; done;' ]
-        - name: init-mysql
-          image: busybox:latest
-          imagePullPolicy: IfNotPresent
-          command: [ 'sh', '-c', 'until nslookup svc-pay-mysql.pay.svc.cluster.local; do echo waiting for redis; sleep 3; done;' ]
-        - name: init-activemq
-          image: busybox:latest
-          imagePullPolicy: IfNotPresent
-          command: [ 'sh', '-c', 'until nslookup svc-pay-activemq.pay.svc.cluster.local; do echo waiting for redis; sleep 3; done;' ]
-      containers:
-        - name: pay-payment
-          image: registry.cn-shanghai.aliyuncs.com/taotaodev/pay-payment:v2.1.0
-          imagePullPolicy: IfNotPresent
-          ports:
-            - containerPort: 9216
-              name: payment
-              protocol: TCP
-          resources:
-            requests:
-              cpu: 500m
-              memory: 1Gi
-          volumeMounts:
-            - mountPath: /workspace/logs
-              subPath: payment/logs
-              name: volumes-payment
-            - mountPath: /workspace/application.yml
-              subPath: application.yml
-              name: volumes-payment-config
-      volumes:
-        - name: volumes-payment
+        - name: volumes-manager
+          persistentVolumeClaim:
+            claimName: pvc-pay-cache
+        - name: volumes-merchant
           persistentVolumeClaim:
             claimName: pvc-pay-cache
         - name: volumes-payment-config
           configMap:
             name: pay-payment-config
-
-
+        - name: volumes-manager-config
+          configMap:
+            name: pay-manager-config
+        - name: volumes-merchant-config
+          configMap:
+            name: pay-merchant-config
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: svc-pay-payment
+  name: svc-pay-server
+  namespace: pay
   labels:
     project: pay
-    app: pay-payment
-  namespace: pay
+    app: pay-server
 spec:
   ports:
     - port: 9216
       protocol: TCP
       targetPort: 9216
+      name: payment
+    - port: 9217
+      protocol: TCP
+      targetPort: 9217
+      name: manager
+    - port: 9218
+      protocol: TCP
+      targetPort: 9218
+      name: merchant
   selector:
-    app: pay-payment
+    app: pay-server
   type: ClusterIP
 ---
-#部署pay-ui-manager
+#部署pay-ui
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: pay-ui-manager
+  name: pay-ui
   namespace: pay
   labels:
     project: pay
-    app: pay-ui-manager
+    app: pay-ui
 spec:
   selector:
     matchLabels:
-      app: pay-ui-manager
+      app: pay-ui
   template:
     metadata:
       labels:
         project: pay
-        app: pay-ui-manager
+        app: pay-ui
     spec:
       initContainers:
-        - name: init-manager
+        - name: init-server
           image: busybox:latest
           imagePullPolicy: IfNotPresent
-          command: [ 'sh', '-c', 'until nslookup svc-pay-manager.pay.svc.cluster.local; do echo waiting for redis; sleep 3; done;' ]
+          command: [ 'sh', '-c', 'until nslookup svc-pay-server.pay.svc.cluster.local; do echo waiting for redis; sleep 3; done;' ]
       containers:
-        - name: pay-ui-manager
-          image: registry.cn-shanghai.aliyuncs.com/taotaodev/pay-ui-manager:v2.1.0
-          imagePullPolicy: IfNotPresent
+        - name: pay-ui
+          image: registry-vpc.cn-shanghai.aliyuncs.com/taotaodev/pay-ui:v2.1.0
+          imagePullPolicy: Always
           env:
-            - name: BACKEND_HOST
-              value: svc-pay-manager.pay.svc.cluster.local:9217
+            - name: BACKEND_HOST1
+              value: http://svc-pay-server.pay.svc.cluster.local:9216
+            - name: BACKEND_HOST2
+              value: http://svc-pay-server.pay.svc.cluster.local:9217
+            - name: BACKEND_HOST3
+              value: http://svc-pay-server.pay.svc.cluster.local:9218
           readinessProbe:
             failureThreshold: 3
             httpGet:
-              port: 80
+              port: 9226
               scheme: HTTP
             initialDelaySeconds: 60
             periodSeconds: 10
@@ -2313,15 +2159,21 @@ spec:
           livenessProbe:
             failureThreshold: 5
             httpGet:
-              port: 80
+              port: 9226
               scheme: HTTP
             initialDelaySeconds: 60
             periodSeconds: 30
             successThreshold: 1
             timeoutSeconds: 5
           ports:
-            - containerPort: 80
-              name: ui-manager
+            - containerPort: 9226
+              name: payment
+              protocol: TCP
+            - containerPort: 9227
+              name: manager
+              protocol: TCP
+            - containerPort: 9228
+              name: merchant
               protocol: TCP
           resources:
             requests:
@@ -2332,175 +2184,30 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: svc-ui-manager
+  name: svc-pay-ui
   labels:
     project: pay
-    app: pay-ui-manager
+    app: pay-ui
   namespace: pay
 spec:
   ports:
-    - port: 80
+    - port: 9226
       protocol: TCP
-      targetPort: 80
+      targetPort: 9226
+      name: payment
+    - port: 9227
+      protocol: TCP
+      targetPort: 9227
+      name: manager
+    - port: 9228
+      protocol: TCP
+      targetPort: 9228
+      name: merchant
   selector:
-    app: pay-ui-manager
+    app: pay-ui
   type: ClusterIP
 ---
-#部署pay-ui-merchant
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: pay-ui-merchant
-  namespace: pay
-  labels:
-    project: pay
-    app: pay-ui-merchant
-spec:
-  selector:
-    matchLabels:
-      app: pay-ui-merchant
-  template:
-    metadata:
-      labels:
-        project: pay
-        app: pay-ui-merchant
-    spec:
-      initContainers:
-        - name: init-merchant
-          image: busybox:latest
-          imagePullPolicy: IfNotPresent
-          command: [ 'sh', '-c', 'until nslookup svc-pay-merchant.pay.svc.cluster.local; do echo waiting for redis; sleep 3; done;' ]
-      containers:
-        - name: pay-ui-merchant
-          image: registry.cn-shanghai.aliyuncs.com/taotaodev/pay-ui-merchant:v2.1.0
-          imagePullPolicy: IfNotPresent
-          env:
-            - name: BACKEND_HOST
-              value: svc-pay-merchant.pay.svc.cluster.local:9218
-          readinessProbe:
-            failureThreshold: 3
-            httpGet:
-              port: 80
-              scheme: HTTP
-            initialDelaySeconds: 60
-            periodSeconds: 10
-            successThreshold: 1
-            timeoutSeconds: 1
-          livenessProbe:
-            failureThreshold: 5
-            httpGet:
-              port: 80
-              scheme: HTTP
-            initialDelaySeconds: 60
-            periodSeconds: 30
-            successThreshold: 1
-            timeoutSeconds: 5
-          ports:
-            - containerPort: 80
-              name: ui-merchant
-              protocol: TCP
-          resources:
-            requests:
-              cpu: 250m
-              memory: 512Mi
-
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: svc-ui-merchant
-  labels:
-    project: pay
-    app: pay-ui-merchant
-  namespace: pay
-spec:
-  ports:
-    - port: 80
-      protocol: TCP
-      targetPort: 80
-  selector:
-    app: pay-ui-merchant
-  type: ClusterIP
----
-#部署pay-ui-payment
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: pay-ui-payment
-  namespace: pay
-  labels:
-    project: pay
-    app: pay-ui-payment
-spec:
-  selector:
-    matchLabels:
-      app: pay-ui-payment
-  template:
-    metadata:
-      labels:
-        project: pay
-        app: pay-ui-payment
-    spec:
-      initContainers:
-        - name: init-payment
-          image: busybox:latest
-          imagePullPolicy: IfNotPresent
-          command: [ 'sh', '-c', 'until nslookup svc-pay-payment.pay.svc.cluster.local; do echo waiting for redis; sleep 3; done;' ]
-      containers:
-        - name: pay-ui-payment
-          image: registry.cn-shanghai.aliyuncs.com/taotaodev/pay-ui-payment:v2.1.0
-          imagePullPolicy: IfNotPresent
-          env:
-            - name: BACKEND_HOST
-              value: svc-pay-payment.pay.svc.cluster.local:9218
-          readinessProbe:
-            failureThreshold: 3
-            httpGet:
-              port: 80
-              scheme: HTTP
-            initialDelaySeconds: 60
-            periodSeconds: 10
-            successThreshold: 1
-            timeoutSeconds: 1
-          livenessProbe:
-            failureThreshold: 5
-            httpGet:
-              port: 80
-              scheme: HTTP
-            initialDelaySeconds: 60
-            periodSeconds: 30
-            successThreshold: 1
-            timeoutSeconds: 5
-          ports:
-            - containerPort: 80
-              name: ui-payment
-              protocol: TCP
-          resources:
-            requests:
-              cpu: 250m
-              memory: 512Mi
-
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: svc-ui-payment
-  labels:
-    project: pay
-    app: pay-ui-payment
-  namespace: pay
-spec:
-  ports:
-    - port: 80
-      protocol: TCP
-      targetPort: 80
-  selector:
-    app: pay-ui-payment
-  type: ClusterIP
----
-##配置ALB Ingress
+#配置ALB Ingress
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -2518,9 +2225,9 @@ spec:
             pathType: ImplementationSpecific
             backend:
               service:
-                name: svc-ui-manager
+                name: svc-pay-ui
                 port:
-                  number: 80
+                  number: 9227
     - host: pay-manager-api.taotaozn.com
       http:
         paths:
@@ -2528,7 +2235,7 @@ spec:
             pathType: ImplementationSpecific
             backend:
               service:
-                name: svc-pay-manager
+                name: svc-pay-server
                 port:
                   number: 9217
     - host: pay-merchant.taotaozn.com
@@ -2539,9 +2246,9 @@ spec:
             pathType: ImplementationSpecific
             backend:
               service:
-                name: svc-ui-merchant
+                name: svc-pay-ui
                 port:
-                  number: 80
+                  number: 9228
     - host: pay-merchant-api.taotaozn.com
       http:
         paths:
@@ -2549,7 +2256,7 @@ spec:
             pathType: ImplementationSpecific
             backend:
               service:
-                name: svc-pay-merchant
+                name: svc-pay-server
                 port:
                   number: 9218
     - host: pay-payment.taotaozn.com
@@ -2560,9 +2267,9 @@ spec:
             pathType: ImplementationSpecific
             backend:
               service:
-                name: svc-ui-payment
+                name: svc-pay-ui
                 port:
-                  number: 80
+                  number: 9226
     - host: pay-payment-api.taotaozn.com
       http:
         paths:
@@ -2570,8 +2277,7 @@ spec:
             pathType: ImplementationSpecific
             backend:
               service:
-                name: svc-pay-payment
+                name: svc-pay-server
                 port:
                   number: 9216
-#101.132.163.130
 ~~~
