@@ -1,9 +1,7 @@
 ---
 title: docker-compose
 date: 2023-03-02 10:09:40
-categories: 
-- docker
-- docker-compose
+categories: docker
 tags:
 - docker
 - docker-compose

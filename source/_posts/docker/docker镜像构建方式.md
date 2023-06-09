@@ -1,7 +1,7 @@
 ---
 title: docker镜像构建方式 
-date: 2023-02-08 11:04:06 
-categories: docker 
+date: 2023-02-08 11:04:06
+categories: docker
 tags: docker镜像构建
 ---
 创建镜像的方法主要有三种：
