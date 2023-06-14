@@ -97,3 +97,16 @@ helm uninstall rancher -n cattle-system
 helm uninstall fleet-agent-local -n cattle-fleet-local-system
 helm uninstall fleet-crd -n cattle-fleet-system
 ~~~
+## helm常用charts仓库
+~~~shell
+#helm官方:
+https://hub.helm.sh/
+#bitnami: 
+https://charts.bitnami.com/bitnami
+#kubeapps: 
+https://hub.kubeapps.com/
+#阿里云镜像
+https://kubernetes.oss-cn-hangzhou.aliyuncs.com/charts
+#微软镜像
+http://mirror.azure.cn/kubernetes/charts
+~~~
