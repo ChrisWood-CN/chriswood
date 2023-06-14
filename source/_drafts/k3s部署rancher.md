@@ -57,6 +57,11 @@ sed -i 's/SELINUX=enforcing/SELINUX=disabled/' /etc/selinux/config
 
 curl -sfL https://rancher-mirror.rancher.cn/k3s/k3s-install.sh | INSTALL_K3S_MIRROR=cn INSTALL_K3S_VERSION=v1.21.14+k3s1 sh -
 ~~~
+#### 卸载k3s
+~~~shell
+/usr/local/bin/k3s-killall.sh
+/usr/local/bin/k3s-uninstall.sh
+~~~
 #### 安装helm
 > https://helm.sh/docs/intro/install/
 > https://github.com/helm/helm/releases
