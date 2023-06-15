@@ -2,7 +2,7 @@
 title: shell脚本编辑
 categories: shell
 tags:
-  - shell
+- shell
 date: 2023-06-09 14:44:00
 ---
 

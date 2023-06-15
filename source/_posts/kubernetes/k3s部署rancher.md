@@ -2,38 +2,40 @@
 title: k3s部署rancher
 categories: rancher
 tags:
-- rancher
-- k3s
+  - rancher
+  - k3s
+date: 2023-06-15 08:50:21
 ---
+
 ## 简易版
 rancher版本2.7.4
 #### 部署k3s server节点
 如果是windows环境，推荐使用k3d在docker中安装k3s
 ~~~shell
-k3d cluster create --config k3d-my-k3s.yaml
+k3d cluster create --config local-k3s.yaml
 ~~~
 ~~~yaml
 # k3d configuration file, saved as e.g. /home/me/myk3dcluster.yaml
 apiVersion: k3d.io/v1alpha5 # this will change in the future as we make everything more stable
 kind: Simple # internally, we also have a Cluster config, which is not yet available externally
 metadata:
-  name: my-k3s # name that you want to give to your cluster (will still be prefixed with `k3d-`)
-servers: 1 # same as `--servers 1`
+  name: local-k3s # name that you want to give to your cluster (will still be prefixed with `k3d-`)
+servers: 2 # same as `--servers 1`
 agents: 2 # same as `--agents 2`
 kubeAPI: # same as `--api-port myhost.my.domain:6445` (where the name would resolve to 127.0.0.1)
   #host: "myhost.my.domain" # important for the `server` setting in the kubeconfig
   hostIP: "127.0.0.1" # where the Kubernetes API will be listening on
-  hostPort: "6445" # where the Kubernetes API listening port will be mapped to on your host system
+  hostPort: "6443" # where the Kubernetes API listening port will be mapped to on your host system
 image: rancher/k3s:v1.21.14-k3s1 # same as `--image rancher/k3s:v1.20.4-k3s1`
-network: my-k3s-net # same as `--network my-custom-net`
+network: k3s-net # same as `--network my-custom-net`
 ports:
   - port: 8080:80 # same as `--port '8080:80@loadbalancer'`
     nodeFilters:
       - loadbalancer
-env:
-  - envVar: bar=baz # same as `--env 'bar=baz@server:0'`
-    nodeFilters:
-      - server:0
+#env:
+#  - envVar: bar=baz # same as `--env 'bar=baz@server:0'`
+#    nodeFilters:
+#      - server:0
 options:
   k3d: # k3d runtime settings
     wait: true # wait for cluster to be usable before returining; same as `--wait` (default: true)
