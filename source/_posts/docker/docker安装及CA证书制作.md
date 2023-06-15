@@ -1,8 +1,11 @@
 ---
-title: docker安装及CA证书制作
+title: docker安装及远程CA证书制作
 date: 2023-03-01 15:37:24
+updated: 2023-06-15 14:26:11
 categories: docker
-tags: dockerCA证书
+tags: 
+- docker
+- docker远程CA证书
 ---
 ## 环境
 云服务器centOS 7.6 64位
@@ -34,7 +37,7 @@ yum remove docker-ce-rootless-extras.x86_64
 yum remove docker-compose-plugin.x86_64
 yum remove docker-scan-plugin.x86_64
 ~~~
-### CA证书制作
+### 远程CA证书制作
 ~~~shell
 # 创建文件夹
 mkdir -p /mydata/certs/docker

@@ -8,7 +8,7 @@ tags: docker镜像构建
 
 - 基于已有镜像的容器创建
 - 基于本地模板导入
-- 基于Dockerfile创建
+- 基于Dockerfile创建（*推荐）
 
 ## 一、基于容器创建镜像
 
@@ -146,8 +146,4 @@ COPY --from=mj target/my-app-1.0-SNAPSHOT.jar my-app-1.0-SNAPSHOT.jar
 EXPOSE 8080
 #start service
 CMD ["java", "-jar", "my-app-1.0-SNAPSHOT.jar"]
-~~~
-
-~~~
-docker run --name srs-server --rm -it -p 1935:1935 -p 1985:1985 -p 8080:8080 registry.cn-hangzhou.aliyuncs.com/ossrs/srs:4 ./objs/srs -c conf/docker.conf
 ~~~

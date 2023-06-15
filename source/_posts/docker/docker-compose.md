@@ -1,6 +1,7 @@
 ---
 title: docker-compose
 date: 2023-03-02 10:09:40
+updated: 2023-06-15 14:03:05
 categories: docker
 tags:
 - docker
@@ -245,7 +246,6 @@ docker-compose push [options] [SERVICE...]
 - --ignore-push-failure 忽略推送镜像过程中的错误
 ### docker-compose version
 Docker Compose版本信息
-
 ## Docker五种网络模式与应用场景
 bridge（默认）、host 、container 、none 和⾃定义（Macvlan）五种模式。
 ~~~yml
@@ -355,3 +355,193 @@ dead（死亡）
 docker ps -a命令，可以查看全部已存在的容器
 ~~~
 
+
+## docker-compose.yml文件编写
+> 参考：https://docs.docker.com/compose/compose-file/compose-file-v3/
+### Compose和 Docker兼容性矩阵
+docker-ce版本和compose版本对应关系根据具体情况编辑
+### docker swarm上的docker-compose示例
+~~~yaml
+version: "3.9"
+services:
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379"
+    networks:
+      - frontend
+    deploy:
+      replicas: 2
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+
+  db:
+    image: postgres:9.4
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - backend
+    deploy:
+      placement:
+        max_replicas_per_node: 1
+        constraints:
+          - "node.role==manager"
+
+  vote:
+    image: dockersamples/examplevotingapp_vote:before
+    ports:
+      - "5000:80"
+    networks:
+      - frontend
+    depends_on:
+      - redis
+    deploy:
+      replicas: 2
+      update_config:
+        parallelism: 2
+      restart_policy:
+        condition: on-failure
+
+  result:
+    image: dockersamples/examplevotingapp_result:before
+    ports:
+      - "5001:80"
+    networks:
+      - backend
+    depends_on:
+      - db
+    deploy:
+      replicas: 1
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+
+  worker:
+    image: dockersamples/examplevotingapp_worker
+    networks:
+      - frontend
+      - backend
+    deploy:
+      mode: replicated
+      replicas: 1
+      labels: [APP=VOTING]
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+        max_attempts: 3
+        window: 120s
+      placement:
+        constraints:
+          - "node.role==manager"
+
+  visualizer:
+    image: dockersamples/visualizer:stable
+    ports:
+      - "8080:8080"
+    stop_grace_period: 1m30s
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    deploy:
+      placement:
+        constraints:
+          - "node.role==manager"
+
+networks:
+  frontend:
+  backend:
+
+volumes:
+  db-data:
+~~~
+#### 基本配置选项
+~~~yaml
+services:
+  webapp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args: #添加构建参数，这些参数是只能在构建过程中访问的环境变量 使用数组或字典
+        buildno: 1 
+        exportPort: 8888
+#      下面这种格式也可以
+#      - buildno=1
+#      - exportPort=8888
+      labels: # 使用Docker标签将元数据添加到生成的镜像。使用数组或字典
+        com.example.description: "Accounting webapp"
+        com.example.department: "Finance"
+      network: host #构建期间为 RUN 指令设置的网络
+      target: prod #构建 Dockerfile中定义的指定阶段。参阅docker的多阶段构建文档
+    configs:      #配置必须已经存在或已在顶级配置配置中定义  docker swarm中才有
+      - my_other_config
+      - source: my_config
+        target: /redis_config 
+        uid: '103' #在服务的任务容器中拥有已安装配置文件的数字 UID 或 GID。如果未指定，两者在 Linux 上均默认为 0
+        gid: '103'
+        mode: 0440 #八进制表示法在服务的任务容器中安装的文件的权限
+    image: myimage:latest
+    credential_spec:
+      config: my_credential_spec
+    container_name: my-web-container
+    # deploy在swarm中生效  
+    # 这些只在普通docker中生效build，cgroup_parent，container_name，devices，tmpfs，external_links，links，
+    # network_mode，restart，security_opt，userns_mode
+    deploy: #指定与服务的部署和运行相关的配置
+      endpoint_mode: vip #为连接到群的外部客户端指定服务发现方法
+      # vip Docker为服务分配一个虚拟 IP (VIP)，充当客户端访问网络服务的前端
+      # dnsrr  DNS轮询服务发现  Docker为服务设置 DNS条目，对服务名称的DNS查询返回IP地址列表，客户端直接连接到其中一个
+      labels:
+        com.example.description: "This label will appear on the web service"
+      mode: replicated #global（每个集群节点一个容器）或replicated （指定数量的容器）。默认replicated
+      replicas: 6  #在给定时间应该运行的容器数量
+      placement:  #指定约束和优先部署顺序
+        max_replicas_per_node: 1  #如果服务是replicated（这是默认设置），则限制任何时候可以在节点上运行的副本数
+        constraints:
+          - "node.role==manager"
+        preferences:
+          - spread: node.labels.zone
+      resources: #配置资源限制
+        limits:
+          cpus: '0.50'
+          memory: 50M
+        reservations:
+          cpus: '0.25'
+          memory: 20M
+      update_config: #更新容器策略
+        parallelism: 2 #一次执行的容器数，设置为0则全部一次执行
+        delay: 10s
+        failure_action: pause #失败后操作 continue pause
+      rollback_config: #回滚容器策略
+        parallelism: 2 #一次执行的容器数，设置为0则全部一次执行
+        delay: 10s
+        failure_action: pause #失败后操作 continue pause
+      restart_policy: #重启容器策略
+        condition: on-failure  #none, on-failure or any (default: any).
+        delay: 5s #重新启动尝试之间等待的时间过长
+        max_attempts: 3 #最大尝试次数
+        window: 120s #在决定重启是否成功之前等待多长时间
+    depends_on:
+      - db
+      - redis
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    
+  db:
+    image: postgres:latest
+    container_name: db
+    environment:
+      POSTGRES_PASSWORD: 123456
+
+  configs:   #配置   docker swarm中才有
+    my_config:
+      file: ./my_config.txt
+    my_other_config:
+      external: true
+~~~
