@@ -61,7 +61,11 @@ curl -sfL https://rancher-mirror.rancher.cn/k3s/k3s-install.sh | INSTALL_K3S_MIR
 ~~~
 #### 卸载k3s
 ~~~shell
+# 停止k3s
 /usr/local/bin/k3s-killall.sh
+# 重启k3s
+systemctl restart k3s
+# 卸载k3s
 /usr/local/bin/k3s-uninstall.sh
 ~~~
 #### 安装helm
