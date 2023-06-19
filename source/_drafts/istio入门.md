@@ -598,6 +598,519 @@ spec:
 ## 地域负载均衡
 待完善
 ## Ingress
+控制 Istio 服务网格的入口流量
+### 入口网关
+除了支持 Kubernetes Ingress，Istio还提供了另一种配置模式，Istio Gateway。与 Ingress 相比，Gateway 
+提供了更广泛的自定义和灵活性，并允许将 Istio 功能（例如监控和路由规则）应用于进入集群的流量
+#### 使用网关配置 Ingress
+~~~shell
+kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.18/samples/httpbin/httpbin.yaml
+~~~
+为 HTTP 流量在 80 端口上配置 Gateway
+~~~yaml
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: httpbin-gateway
+spec:
+  selector:
+    istio: ingressgateway # use Istio default gateway implementation
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts: # "*"
+    - "httpbin.example.com"  
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: httpbin
+spec:
+  hosts: # "*"
+    - "httpbin.example.com"   
+  gateways:
+    - httpbin-gateway #绑定网关
+  http:
+    - match:
+        - uri:
+            prefix: /status
+        - uri:
+            prefix: /delay
+      route:
+        - destination:
+            port:
+              number: 8000
+            host: httpbin
+~~~
+##### 确定 Ingress IP 和端口
+每个Gateway由类型为LoadBalancer的服务支撑，该服务的外部负载均衡器 IP 和端口用于访问 Gateway。
+~~~shell
+kubectl get svc istio-ingressgateway -n istio-ingress
+# 得到$INGRESS_HOST和$INGRESS_PORT
+~~~
+#### 访问 Ingress 服务
+~~~shell
+curl -s -I -HHost:httpbin.example.com "http://$INGRESS_HOST:$INGRESS_PORT/status/200"
+~~~
+### 安全网关
+描述如何使用TLS或mTLS公开安全的HTTPS服务。
+~~~shell
+kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.18/samples/httpbin/httpbin.yaml
+~~~
+#### 生成客户端和服务器证书和密钥
+~~~shell
+#创建用于服务签名的根证书和私钥
+mkdir example_certs1
+openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:2048 -subj '/O=example Inc./CN=example.com' -keyout example_certs1/example.com.key -out example_certs1/example.com.crt
+#为 httpbin.example.com 创建证书和私钥
+openssl req -out example_certs1/httpbin.example.com.csr -newkey rsa:2048 -nodes -keyout example_certs1/httpbin.example.com.key -subj "/CN=httpbin.example.com/O=httpbin organization"
+openssl x509 -req -sha256 -days 365 -CA example_certs1/example.com.crt -CAkey example_certs1/example.com.key -set_serial 0 -in example_certs1/httpbin.example.com.csr -out example_certs1/httpbin.example.com.crt
+#创建第二组相同类型的证书和密钥
+mkdir example_certs2
+openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:2048 -subj '/O=example Inc./CN=example.com' -keyout example_certs2/example.com.key -out example_certs2/example.com.crt
+openssl req -out example_certs2/httpbin.example.com.csr -newkey rsa:2048 -nodes -keyout example_certs2/httpbin.example.com.key -subj "/CN=httpbin.example.com/O=httpbin organization"
+openssl x509 -req -sha256 -days 365 -CA example_certs2/example.com.crt -CAkey example_certs2/example.com.key -set_serial 0 -in example_certs2/httpbin.example.com.csr -out example_certs2/httpbin.example.com.crt
 
+
+#为 helloworld.example.com 生成证书和私钥
+openssl req -out example_certs1/helloworld.example.com.csr -newkey rsa:2048 -nodes -keyout example_certs1/helloworld.example.com.key -subj "/CN=helloworld.example.com/O=helloworld organization"
+openssl x509 -req -sha256 -days 365 -CA example_certs1/example.com.crt -CAkey example_certs1/example.com.key -set_serial 1 -in example_certs1/helloworld.example.com.csr -out example_certs1/helloworld.example.com.crt
+#生成客户端证书和私钥
+openssl req -out example_certs1/client.example.com.csr -newkey rsa:2048 -nodes -keyout example_certs1/client.example.com.key -subj "/CN=client.example.com/O=client organization"
+openssl x509 -req -sha256 -days 365 -CA example_certs1/example.com.crt -CAkey example_certs1/example.com.key -set_serial 1 -in example_certs1/client.example.com.csr -out example_certs1/client.example.com.crt
+~~~
+#### 配置单机TLS入口网关
+1.为 Ingress Gateway 创建 Secret
+~~~shell
+kubectl create -n istio-system secret tls httpbin-credential \
+  --key=example_certs1/httpbin.example.com.key \
+  --cert=example_certs1/httpbin.example.com.crt
+~~~
+2.配置入口网关
+~~~yaml
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: mygateway
+spec:
+  selector:
+    istio: ingressgateway # use istio default ingress gateway
+  servers:
+  - port:
+      number: 443
+      name: https
+      protocol: HTTPS
+    tls:
+      mode: SIMPLE
+      credentialName: httpbin-credential # 必须和上一步创建的secret同名
+    hosts:
+    - httpbin.example.com # 和上一步secret的域名一致
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: httpbin
+spec:
+  hosts:
+    - "httpbin.example.com"
+  gateways:
+    - mygateway
+  http:
+    - match:
+        - uri:
+            prefix: /status
+        - uri:
+            prefix: /delay
+      route:
+        - destination:
+            port:
+              number: 8000
+            host: httpbin
+~~~
+3.测试
+~~~shell
+curl -v -HHost:httpbin.example.com --resolve "httpbin.example.com:$SECURE_INGRESS_PORT:$INGRESS_HOST" \
+  --cacert example_certs1/example.com.crt "https://httpbin.example.com:$SECURE_INGRESS_PORT/status/418"
+~~~
+4.删除第一个证书，使用第二个
+~~~shell
+kubectl -n istio-system delete secret httpbin-credential
+kubectl create -n istio-system secret tls httpbin-credential \
+  --key=example_certs2/httpbin.example.com.key \
+  --cert=example_certs2/httpbin.example.com.crt
+~~~
+5.使用旧的证书链和curl来访问httpbin服务会失败，需要使用新的
+~~~shell
+curl -v -HHost:httpbin.example.com --resolve "httpbin.example.com:$SECURE_INGRESS_PORT:$INGRESS_HOST" \
+  --cacert example_certs2/example.com.crt "https://httpbin.example.com:$SECURE_INGRESS_PORT/status/418"
+~~~
+#### 为多个主机配置TLS入口网关
+1.启动 helloworld-v1 示例，创建 helloworld-credential Secret
+~~~shell
+kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.18/samples/helloworld/helloworld.yaml -l service=helloworld
+kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.18/samples/helloworld/helloworld.yaml -l version=v1
+kubectl create -n istio-system secret tls helloworld-credential --key=helloworld-v1.example.com.key --cert=helloworld-v1.example.com.crt
+~~~
+2.使用 httpbin.example.com 和 helloworld.example.com 主机配置入口网关
+~~~yaml
+#为 443 端口定义一个具有两个服务器部分的网关。将每个端口上的 credentialName 值分别设置为 httpbin-credential 
+#和 helloworld-credential。将 TLS 模式设置为 SIMPLE。
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: mygateway
+spec:
+  selector:
+    istio: ingressgateway # use istio default ingress gateway
+  servers:
+    - port:
+        number: 443
+        name: https-httpbin
+        protocol: HTTPS
+      tls:
+        mode: SIMPLE
+        credentialName: httpbin-credential
+      hosts:
+        - httpbin.example.com
+    - port:
+        number: 443
+        name: https-helloworld
+        protocol: HTTPS
+      tls:
+        mode: SIMPLE
+        credentialName: helloworld-credential
+      hosts:
+        - helloworld.example.com
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: helloworld
+spec:
+  hosts:
+    - helloworld.example.com
+  gateways:
+    - mygateway
+  http:
+    - match:
+        - uri:
+            exact: /hello
+      route:
+        - destination:
+            host: helloworld
+            port:
+              number: 5000
+~~~
+3.测试
+~~~shell
+curl -v -HHost:helloworld.example.com --resolve "helloworld.example.com:$SECURE_INGRESS_PORT:$INGRESS_HOST" \
+  --cacert example_certs1/example.com.crt "https://helloworld.example.com:$SECURE_INGRESS_PORT/hello"
+  
+curl -v -HHost:httpbin.example.com --resolve "httpbin.example.com:$SECURE_INGRESS_PORT:$INGRESS_HOST" \
+  --cacert example_certs1/example.com.crt "https://httpbin.example.com:$SECURE_INGRESS_PORT/status/418"
+~~~
+#### 配置双向TLS入口网关
+1.通过删除其Secret并创建一个新的来更改入口网关的凭据。服务器使用CA证书来验证其客户端
+~~~shell
+kubectl -n istio-system delete secret httpbin-credential
+kubectl create -n istio-system secret generic httpbin-credential \
+  --from-file=tls.key=example_certs1/httpbin.example.com.key \
+  --from-file=tls.crt=example_certs1/httpbin.example.com.crt \
+  --from-file=ca.crt=example_certs1/example.com.crt
+~~~
+2.更改网关的定义以将 TLS 模式设置为 MUTUAL
+~~~yaml
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: mygateway
+spec:
+  selector:
+    istio: ingressgateway # use istio default ingress gateway
+  servers:
+  - port:
+      number: 443
+      name: https
+      protocol: HTTPS
+    tls:
+      mode: MUTUAL
+      credentialName: httpbin-credential # must be the same as secret
+    hosts:
+    - httpbin.example.com
+~~~
+3.尝试使用之前的方法发送 HTTPS 请求，失败
+~~~shell
+curl -v -HHost:httpbin.example.com --resolve "httpbin.example.com:$SECURE_INGRESS_PORT:$INGRESS_HOST" \
+--cacert example_certs1/example.com.crt "https://httpbin.example.com:$SECURE_INGRESS_PORT/status/418"
+~~~
+4.将客户端证书和私钥传递给 curl 并重新发送请求。将带有 --cert 标志的客户证书和带有 --key 标志的私钥传递给 curl
+~~~shell
+curl -v -HHost:httpbin.example.com --resolve "httpbin.example.com:$SECURE_INGRESS_PORT:$INGRESS_HOST" \
+  --cacert example_certs1/example.com.crt \
+  --cert example_certs1/client.example.com.crt \
+  --key example_certs1/client.example.com.key \
+  "https://httpbin.example.com:$SECURE_INGRESS_PORT/status/418"
+~~~
+#### Kubernetes Ingress
+描述如何使用Kubernetes Ingress为Istio配置入口网关以暴露服务网格集群内的服务
+~~~yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    #需要使用 kubernetes.io/ingress.class 注解来告知 Istio 网关控制器它应该处理此 Ingress，否则它将被忽略
+    kubernetes.io/ingress.class: istio
+  name: ingress
+spec:
+  rules:
+  - host: httpbin.example.com
+    http:
+      paths:
+      - path: /status
+        pathType: Prefix
+        backend:
+          service:
+            name: httpbin
+            port:
+              number: 8000
+~~~
+#### Kubernetes Gateway API
+描述 Istio 和 Kubernetes API 之间的差异，并提供了一个简单的例子，演示如何配置 Istio 
+以使用Gateway API在服务网格集群外部暴露服务。
+> Gateway API暂时还不稳定，处于快速迭代中
+~~~shell
+# 在大多数 Kubernetes 集群中，默认情况下不会安装 Gateway API，需要安装
+kubectl get crd gateways.gateway.networking.k8s.io &> /dev/null || \
+  { kubectl kustomize "github.com/kubernetes-sigs/gateway-api/config/crd?ref=v0.6.2" | kubectl apply -f -; }
+~~~
+1.区别
+- Istio API 中的 Gateway 仅配置已部署的现有网关 Deployment/Service， 而在 Gateway API 
+  中的 Gateway 资源不仅配置也会部署网关。 有关更多信息，请参阅具体部署方法 。
+- 在 Istio VirtualService 中，所有协议都在单一的资源中配置， 而在 Gateway API 中，每种协议
+  类型都有自己的资源，例如 HTTPRoute 和 TCPRoute。
+- 虽然 Gateway API 提供了大量丰富的路由功能，但它还没有涵盖 Istio 的全部特性。 因此，正在进行
+  的工作是扩展 API 以覆盖这些用例，以及利用 API 的可拓展性 来更好地暴露 Istio 的功能
+2.使用（待完善）
 ## Egress
-
+控制Istio服务网格的出口流量。
+### 访问外部服务
+访问外部服务的三种方法：
+- 允许 Envoy 代理将请求传递到未在网格内配置过的服务。
+- 配置 service entry 以提供对外部服务的受控访问。
+- 对于特定范围的 IP，完全绕过 Envoy 代理
+#### 开始
+~~~shell
+kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.18/samples/sleep/sleep.yaml
+export SOURCE_POD=$(kubectl get pod -l app=sleep -o jsonpath={.items..metadata.name})
+~~~
+#### Envoy 转发流量到外部服务
+Istio 有一个安装选项， global.outboundTrafficPolicy.mode，它配置 Sidecar 对外部服务（那些没有在
+Istio 的内部服务注册中定义的服务）的处理方式。如果这个选项设置为 ALLOW_ANY， Istio 代理允许调用未知的
+服务。如果这个选项设置为 REGISTRY_ONLY，那么 Istio 代理会阻止任何没有在网格中定义的 HTTP 服务或 
+service entry 的主机。ALLOW_ANY 是默认值，不控制对外部服务的访问。
+~~~shell
+kubectl exec "$SOURCE_POD" -c sleep -- curl -sSI https://www.google.com | grep  "HTTP/"; 
+kubectl exec "$SOURCE_POD" -c sleep -- curl -sI https://edition.cnn.com | grep "HTTP/"
+~~~
+这种访问外部服务的简单方法有一个缺点，即丢失了对外部服务流量的 Istio 监控和控制； 比如，外部服务的调用
+没有记录到 Mixer 的日志中。
+#### 控制对外部服务的访问
+##### 更改为默认的封锁策略
+执行以下命令来将 global.outboundTrafficPolicy.mode 选项改为 REGISTRY_ONLY
+~~~yaml
+spec:
+  meshConfig:
+    outboundTrafficPolicy:
+      mode: REGISTRY_ONLY
+~~~
+##### 访问一个外部的 HTTP 服务
+1.创建一个 ServiceEntry，以允许访问一个外部的 HTTP 服务
+~~~yaml
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: httpbin-ext
+spec:
+  hosts:
+  - httpbin.org
+  ports:
+  - number: 80
+    name: http
+    protocol: HTTP
+  resolution: DNS
+  location: MESH_EXTERNAL
+~~~
+2.访问外部HTTP服务
+~~~shell
+kubectl exec -it $SOURCE_POD -c sleep -- curl http://httpbin.org/headers
+#{
+#  "headers": {
+#  "Accept": "*/*",
+#  "Connection": "close",
+#  "Host": "httpbin.org",
+#  ...
+#  "X-Envoy-Decorator-Operation": "httpbin.org:80/*",
+#  }
+#}
+# 注意由 Istio sidecar 代理添加的 headers: X-Envoy-Decorator-Operation
+~~~
+##### 访问外部 HTTPS 服务
+1.创建一个 ServiceEntry，允许对外部服务的访问
+~~~yaml
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: google
+spec:
+  hosts:
+  - www.google.com
+  ports:
+  - number: 443
+    name: https
+    protocol: HTTPS
+  resolution: DNS
+  location: MESH_EXTERNAL
+~~~
+2.访问外部HTTPS服务
+~~~shell
+kubectl exec -it $SOURCE_POD -c sleep -- curl -I https://www.google.com | grep  "HTTP/"
+#HTTP/2 200
+~~~
+##### 管理到外部服务的流量
+与集群内的请求相似，也可以为使用 ServiceEntry 配置访问的外部服务设置 Istio 路由规则。
+1.设置调用外部服务 httpbin.org 的超时时间为 3 秒
+~~~yaml
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: httpbin-ext
+spec:
+  hosts:
+    - httpbin.org
+  http:
+  - timeout: 3s #设置超时3s
+    route:
+      - destination:
+          host: httpbin.org
+        weight: 100
+~~~
+2.访问
+~~~shell
+kubectl exec "$SOURCE_POD" -c sleep -- time curl -o /dev/null -s -w "%{http_code}\n" http://httpbin.org/delay/5
+~~~
+##### 直接访问外部服务
+让特定范围的IP完全绕过Istio，可以配置Envoy Sidecars以防止它们拦截外部请求，要设置绕过 
+Istio，更改global.proxy.includeIPRanges或global.proxy.excludeIPRanges配置参数
+- 排除所有外部 IP 重定向到 Sidecar 代理的一种简单方法是将 global.proxy.includeIPRanges 
+配置选项设置为内部集群服务使用的 IP 范围
+### 出口网关
+如何配置Istio以通过专用的 egress gateway 服务间接调用外部服务
+#### 使用场景
+1.服务网格所有的出站流量必须经过一组专用节点， 这些专用节点用于实施 egress 流量的策略。
+2.集群中的应用节点没有公有IP，节点上运行的网格Service无法访问互联网。通过定义 egress gateway，
+将公有IP分配给egress gateway节点，用它引导所有的出站流量，可以使应用节点以受控方式访问外部服务
+##### 部署 Istio egress gateway
+~~~shell
+kubectl get pod -l istio=egressgateway -n istio-ingress
+~~~
+使用 IstioOperator CR 安装 Istio，请在配置中添加以下字段
+~~~yaml
+spec:
+  components:
+    egressGateways:
+      - name: istio-egressgateway
+        enabled: true
+~~~
+istioctl
+~~~shell
+istioctl install <flags-you-used-to-install-Istio> \
+                   --set components.egressGateways[0].name=istio-egressgateway \
+                   --set components.egressGateways[0].enabled=true
+~~~
+##### 定义 Egress gateway 并引导 HTTP 流量
+1.为 edition.cnn.com 定义一个 ServiceEntry
+~~~yaml
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: cnn
+spec:
+  hosts:
+  - edition.cnn.com
+  ports:
+  - number: 80
+    name: http-port
+    protocol: HTTP
+  - number: 443
+    name: https
+    protocol: HTTPS
+  resolution: DNS
+~~~
+2.为 edition.cnn.com 端口 80 创建 egress Gateway。并为指向 egress gateway 的流量创建一个 destination rule。
+~~~yaml
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: istio-egressgateway
+spec:
+  selector:
+    istio: egressgateway
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - edition.cnn.com
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: egressgateway-for-cnn
+spec:
+  host: istio-egressgateway.istio-system.svc.cluster.local
+  subsets:
+  - name: cnn
+~~~
+3.定义一个 VirtualService，将流量从 Sidecar 引导至 Egress Gateway， 再从 Egress Gateway 引导至外部服务
+~~~yaml
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: direct-cnn-through-egress-gateway
+spec:
+  hosts:
+  - edition.cnn.com
+  gateways:
+  - istio-egressgateway
+  - mesh
+  http:
+  - match:
+    - gateways:
+      - mesh
+      port: 80
+    route:
+    - destination:
+        host: istio-egressgateway.istio-system.svc.cluster.local
+        subset: cnn
+        port:
+          number: 80
+      weight: 100
+  - match:
+    - gateways:
+      - istio-egressgateway
+      port: 80
+    route:
+    - destination:
+        host: edition.cnn.com
+        port:
+          number: 80
+      weight: 100
+~~~
+##### 用 Egress gateway 发起 HTTPS 请求
+待完善
+##### 应用 Kubernetes 网络策略
+待完善
