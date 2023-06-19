@@ -110,12 +110,10 @@ helm uninstall fleet-crd -n cattle-fleet-system
 ~~~
 ## helm常用charts仓库
 ~~~shell
-#helm官方:
-https://hub.helm.sh/
 #bitnami: 
 https://charts.bitnami.com/bitnami
 #kubeapps: 
-https://hub.kubeapps.com/
+https://charts.appscode.com/stable/
 #阿里云镜像
 https://kubernetes.oss-cn-hangzhou.aliyuncs.com/charts
 #微软镜像
