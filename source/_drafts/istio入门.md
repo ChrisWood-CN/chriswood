@@ -397,13 +397,206 @@ spec:
       weight: 20 #20%流量转移到v2版本
 ~~~
 ## 设置请求超时
-
+### 请求超时
+HTTP 请求的超时可以用路由规则的 timeout 字段来指定。默认情况下，超时是禁用的，把reviews
+服务的超时设置为 1 秒。 为了观察效果，还需要在对 ratings 服务的调用上人为引入2秒的延迟
+~~~yaml
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: ratings
+spec:
+  hosts:
+  - ratings
+  http:
+  - fault: 
+      delay:
+        percent: 100
+        fixedDelay: 2s # 人为引入2秒的延迟
+    route:
+    - destination:
+        host: ratings
+        subset: v1
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: reviews
+spec:
+  hosts:
+    - reviews
+  http:
+    - route:
+        - destination:
+            host: reviews
+            subset: v2
+      timeout: 0.5s # 设置超时为0.5s
+# 刷新 Bookinfo 页面。应该看到 1秒钟就会返回，但 reviews是不可用的
+# 即使超时配置为半秒，响应仍需要 1 秒，是因为 productpage 服务中存在硬编码重试， 
+# 因此它在返回之前调用 reviews 服务超时两次
+~~~
 ## 熔断
-
+如何为连接、请求以及异常检测配置熔断，配置熔断规则，然后通过有意的使熔断器“跳闸”来测试配置
+~~~shell
+kubectl label namespace default istio-injection=enabled
+kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.18/samples/httpbin/httpbin.yaml
+~~~
+~~~yaml
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: httpbin
+spec:
+  host: httpbin
+  trafficPolicy:
+    connectionPool:
+      tcp:
+        maxConnections: 1
+      http:
+        http1MaxPendingRequests: 1
+        maxRequestsPerConnection: 1
+    outlierDetection:
+      consecutive5xxErrors: 1
+      interval: 1s
+      baseEjectionTime: 3m
+      maxEjectionPercent: 100
+~~~
+创建客户端
+~~~shell
+kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.18/samples/httpbin/sample-client/fortio-deploy.yaml -n  
+export FORTIO_POD=$(kubectl get pods -l app=fortio -o 'jsonpath={.items[0].metadata.name}')
+kubectl exec "$FORTIO_POD" -c fortio -- /usr/bin/fortio curl -quiet http://httpbin:8000/get
+~~~
+触发熔断器
+~~~shell
+kubectl exec "$FORTIO_POD" -c fortio -- /usr/bin/fortio load -c 2 -qps 0 -n 20 -loglevel Warning http://httpbin:8000/get
+kubectl exec "$FORTIO_POD" -c fortio -- /usr/bin/fortio load -c 3 -qps 0 -n 30 -loglevel Warning http://httpbin:8000/get
+#开始看到预期的熔断行为
+#查询istio-proxy状态以了解更多熔断详情
+kubectl exec "$FORTIO_POD" -c istio-proxy -- pilot-agent request GET stats | grep httpbin | grep pending
+~~~
 ## 流量镜像
+流量镜像，也称为影子流量，是一个以尽可能低的风险为生产带来变化的强大的功能。 镜像会将实时流量的副本发送到镜像服务。
+镜像流量发生在主服务的关键请求路径之外。首先把流量全部路由到测试服务的v1版本。然后，执行规则将一部分流量镜像到v2版本
+~~~yaml
+--- #httpbin-v1
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: httpbin-v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: httpbin
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: httpbin
+        version: v1
+    spec:
+      containers:
+      - image: docker.io/kennethreitz/httpbin
+        imagePullPolicy: IfNotPresent
+        name: httpbin
+        command: ["gunicorn", "--access-logfile", "-", "-b", "0.0.0.0:80", "httpbin:app"]
+        ports:
+        - containerPort: 80
+--- #httpbin-v2
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: httpbin-v2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: httpbin
+      version: v2
+  template:
+    metadata:
+      labels:
+        app: httpbin
+        version: v2
+    spec:
+      containers:
+        - image: docker.io/kennethreitz/httpbin
+          imagePullPolicy: IfNotPresent
+          name: httpbin
+          command: ["gunicorn", "--access-logfile", "-", "-b", "0.0.0.0:80", "httpbin:app"]
+          ports:
+            - containerPort: 80
+--- # Service-httpbin
+apiVersion: v1
+kind: Service
+metadata:
+  name: httpbin
+  labels:
+    app: httpbin
+spec:
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 80
+  selector:
+    app: httpbin
+--- # VirtualService-httpbin
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: httpbin
+spec:
+  hosts:
+    - httpbin
+  http:
+    - route:
+        - destination:
+            host: httpbin
+            subset: v1
+          weight: 100
+--- # DestinationRule-httpbin
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: httpbin
+spec:
+  host: httpbin
+  subsets:
+    - name: v1
+      labels:
+        version: v1
+    - name: v2
+      labels:
+        version: v2
+~~~
+更新VirtualService-httpbin，镜像流量到 v2
+~~~yaml
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: httpbin
+spec:
+  hosts:
+    - httpbin
+  http:
+  - route:
+    - destination:
+        host: httpbin
+        subset: v1
+      weight: 100
+    mirror:
+      host: httpbin
+      subset: v2
+    mirrorPercentage:
+      value: 100.0
+# 这个路由规则发送 100% 流量到 v1 版本。最后一节表示将 100% 的相同流量镜像（即发送）到 httpbin:v2服务。 
+# 当流量被镜像时，请求将发送到镜像服务中，并在 headers 中的 Host/Authority 属性值上追加 -shadow。 
+# 例如 cluster-1 变为 cluster-1-shadow
+~~~
 
 ## 地域负载均衡
-
+待完善
 ## Ingress
 
 ## Egress
