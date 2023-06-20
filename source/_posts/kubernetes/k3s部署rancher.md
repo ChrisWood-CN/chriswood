@@ -20,7 +20,7 @@ apiVersion: k3d.io/v1alpha5 # this will change in the future as we make everythi
 kind: Simple # internally, we also have a Cluster config, which is not yet available externally
 metadata:
   name: local-k3s # name that you want to give to your cluster (will still be prefixed with `k3d-`)
-servers: 2 # same as `--servers 1`
+servers: 1 # same as `--servers 1`
 agents: 2 # same as `--agents 2`
 kubeAPI: # same as `--api-port myhost.my.domain:6445` (where the name would resolve to 127.0.0.1)
   #host: "myhost.my.domain" # important for the `server` setting in the kubeconfig
@@ -32,10 +32,9 @@ ports:
   - port: 8080:80 # same as `--port '8080:80@loadbalancer'`
     nodeFilters:
       - loadbalancer
-#env:
-#  - envVar: bar=baz # same as `--env 'bar=baz@server:0'`
-#    nodeFilters:
-#      - server:0
+  - port: 8443:443 # same as `--port '8080:80@loadbalancer'`
+    nodeFilters:
+      - loadbalancer
 options:
   k3d: # k3d runtime settings
     wait: true # wait for cluster to be usable before returining; same as `--wait` (default: true)
@@ -46,9 +45,28 @@ options:
     loadbalancer:
       configOverrides:
         - settings.workerConnections=2048
+  k3s: # options passed on to K3s itself
+    extraArgs: # additional arguments passed to the `k3s server|agent` command; same as `--k3s-arg`
+      - arg: --disable=traefik  #server disable traefik
+        nodeFilters:
+          - server:*
+    nodeLabels:
+      - label: role=server # same as `--k3s-node-label 'role=server@agent:*'` -> this results in a Kubernetes node label
+        nodeFilters:
+          - server:*
+      - label: type=master
+        nodeFilters:
+          - server:0
+      - label: role=agent # same as `--k3s-node-label 'role=agent@agent:*'` -> this results in a Kubernetes node label
+        nodeFilters:
+          - agent:*
+      - label: type=master
+        nodeFilters:
+          - agent:0
   kubeconfig:
     updateDefaultKubeconfig: true # add new cluster to your default Kubeconfig; same as `--kubeconfig-update-default` (default: true)
     switchCurrentContext: true # also set current-context to the new cluster's context; same as `--kubeconfig-switch-context` (default: true)
+# k3d cluster create --api-port 6443 -p "9080:80@loadbalancer"  -p "9443:443@loadbalancer" --agents 2 --k3s-arg '--disable=traefik@server:*'
 ~~~
 linux环境直接使用官网方式
 ~~~shell
