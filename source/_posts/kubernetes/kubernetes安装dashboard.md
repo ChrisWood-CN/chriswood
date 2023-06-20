@@ -1,17 +1,28 @@
 ---
 title: kubernetes安装dashboard
 date: 2023-05-17 15:07:11
+updated: 2023-06-20 10:08:15
 categories: kubernetes
 tags:
 - kubernetes
 - dashboard
 ---
 ### 安装dashboard
-1.根据recommended.yaml安装
+根据recommended.yaml安装
 ~~~shell
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.7.0/aio/deploy/recommended.yaml
 ~~~
-2.修改为NodePort
+#### 使用kube-proxy
+~~~shell
+kubectl apply -f admin-user.yaml
+kubectl apply -f admin-user-role-binding.yaml
+kubectl -n kubernetes-dashboard create token admin-user
+kubectl proxy
+#访问以下地址即可
+http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/.
+~~~
+#### 使用NodePort暴露服务
+1.修改为NodePort
 ~~~shell
 kubectl get pods --namespace=kubernetes-dashboard -o wide
 kubectl --namespace=kubernetes-dashboard get service kubernetes-dashboard
@@ -19,7 +30,8 @@ kubectl --namespace=kubernetes-dashboard edit service kubernetes-dashboard
 #type: ClusterIP改为type: NodePort
 kubectl --namespace=kubernetes-dashboard get service kubernetes-dashboard
 ~~~
-3.生成证书
+2.生成证书
+因为使用了service的NodePort暴露服务,dashboard本身又需要tls访问，所以此处生成自签名的CA证书
 ~~~shell
 mkdir key && cd key
 openssl genrsa -out dashboard.key 2048
@@ -32,7 +44,7 @@ kubectl create secret generic kubernetes-dashboard-certs --from-file=dashboard.k
 kubectl get pod -n kubernetes-dashboard
 kubectl delete pod kubernetes-dashboard-6ff574dd47-gfzq6  -n kubernetes-dashboard
 ~~~
-4.获取token,参考官方AccessControl配置用户,然后生成token
+3.获取token,参考官方AccessControl配置用户,然后生成token
 > https://github.com/kubernetes/dashboard/blob/master/docs/user/access-control/creating-sample-user.md
 
 admin-user.yaml

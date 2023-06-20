@@ -2,9 +2,11 @@
 title: crontab命令
 categories: Linux
 tags:
-- Linux
-- crontab
+  - Linux
+  - crontab
+date: 2023-06-20 09:58:10
 ---
+
 ## 简介
 crontab命令常见于Unix和类Unix的操作系统之中，用于设置周期性被执行的指令。该命令从标准输入设备读取指令，
 并将其存放于“crontab”文件中（是“cron table”的简写）
