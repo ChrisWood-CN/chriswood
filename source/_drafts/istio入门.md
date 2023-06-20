@@ -1111,6 +1111,181 @@ spec:
       weight: 100
 ~~~
 ##### 用 Egress gateway 发起 HTTPS 请求
-待完善
+1.为 edition.cnn.com 定义 ServiceEntry
+~~~yaml
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: cnn
+spec:
+  hosts:
+  - edition.cnn.com
+  ports:
+  - number: 443
+    name: tls
+    protocol: TLS
+  resolution: DNS
+~~~
+2.发送 HTTPS 请求到 https://edition.cnn.com/politics， 验证ServiceEntry是否已正确生效
+~~~shell
+kubectl exec "$SOURCE_POD" -c sleep -- curl -sSL -o /dev/null -D - https://edition.cnn.com/politics
+~~~
+3.为 edition.cnn.com 创建一个 egress Gateway。还需要创建一个 destination rule 和一个 virtualservice，
+用来引导流量通过Egress Gateway， 并通过Egress Gateway与外部服务通信
+~~~yaml
+# Gateway
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: istio-egressgateway
+spec:
+  selector:
+    istio: egressgateway
+  servers:
+  - port:
+      number: 443
+      name: tls
+      protocol: TLS
+    hosts:
+    - edition.cnn.com
+    tls:
+      mode: PASSTHROUGH
+--- # DestinationRule
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: egressgateway-for-cnn
+spec:
+  host: istio-egressgateway.istio-system.svc.cluster.local
+  subsets:
+  - name: cnn
+--- # VirtualService
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: direct-cnn-through-egress-gateway
+spec:
+  hosts:
+  - edition.cnn.com
+  gateways:
+  - mesh
+  - istio-egressgateway
+  tls:
+  - match:
+    - gateways:
+      - mesh
+      port: 443
+      sni_hosts:
+      - edition.cnn.com
+    route:
+    - destination:
+        host: istio-egressgateway.istio-system.svc.cluster.local
+        subset: cnn
+        port:
+          number: 443
+  - match:
+    - gateways:
+      - istio-egressgateway
+      port: 443
+      sni_hosts:
+      - edition.cnn.com
+    route:
+    - destination:
+        host: edition.cnn.com
+        port:
+          number: 443
+      weight: 100
+~~~
+4.发送 HTTPS 请求到 https://edition.cnn.com/politics
+~~~shell
+kubectl exec "$SOURCE_POD" -c sleep -- curl -sSL -o /dev/null -D - https://edition.cnn.com/politics
+~~~
 ##### 应用 Kubernetes 网络策略
-待完善
+如何创建 Kubernetes 网络策略 来阻止绕过 egress gateway 的出站流量.
+1.创建 test-egress 命名空间
+~~~shell
+kubectl create namespace test-egress
+~~~
+2.在 test-egress 命名空间中部署 sleep 示例应用
+~~~shell
+kubectl apply -n test-egress -f https://raw.githubusercontent.com/istio/istio/release-1.18/samples/sleep/sleep.yaml
+~~~
+3.检查生成的 Pod，其中应该只有一个容器，也就是说没有注入IstioSidecar
+~~~shell
+kubectl get pod $(kubectl get pod -n test-egress -l app=sleep -o jsonpath={.items..metadata.name}) -n test-egress
+~~~
+4.从 test-egress 命名空间的 sleep Pod 中向 https://edition.cnn.com/politics 发送 HTTPS 请求。因为没有任何限制，所以这一请求应该会成功
+~~~shell
+kubectl exec -it $(kubectl get pod -n test-egress -l app=sleep -o jsonpath={.items..metadata.name}) -n test-egress -c sleep -- curl -s -o /dev/null -w "%{http_code}\n"  https://edition.cnn.com/politics
+#200
+~~~
+5.给 Istio 组件（控制平面和 gateway）所在的命名空间打上标签
+~~~shell
+kubectl label namespace istio-system istio=system
+~~~
+6.给 kube-system 命名空间打标签
+~~~shell
+kubectl label ns kube-system kube-system=true
+~~~
+7.创建一个 NetworkPolicy，来限制 test-egress 命名空间的出站流量， 只允许目标为 kube-system DNS（端口 53）的请求，以及目标为 istio-system 命名空间的所有请求
+~~~yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-egress-to-istio-system-and-kube-dns
+spec:
+  podSelector: {}
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kube-system: "true"
+    ports:
+    - protocol: UDP
+      port: 53
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          istio: system
+~~~
+>网络策略由Kubernetes集群中的网络插件实现。以下情况可能不会阻止下面的步骤
+
+8.重新发送前面的 HTTPS 请求到 https://edition.cnn.com/politics，这次请求就不会成功了，这是因为流量被网络策略拦截了
+~~~shell
+kubectl exec -it $(kubectl get pod -n test-egress -l app=sleep -o jsonpath={.items..metadata.name}) -n test-egress -c sleep -- curl -v https://edition.cnn.com/politics
+#Hostname was NOT found in DNS cache
+#  Trying 151.101.65.67...
+#  Trying 2a04:4e42:200::323...
+~~~
+9.接下来在 test-egress 命名空间的 sleep Pod 上注入 Sidecar，启用 test-egress 命名空间的自动注入
+~~~shell
+kubectl label namespace test-egress istio-injection=enabled
+~~~
+10.重新部署 sleep
+~~~shell
+kubectl delete deployment sleep -n test-egress
+kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.18/samples/sleep/sleep.yaml
+~~~
+11.检查生成的 Pod，其中应该有了两个容器，其中包含了注入的 sidecar（istio-proxy）
+~~~shell
+kubectl get pod $(kubectl get pod -n test-egress -l app=sleep -o jsonpath={.items..metadata.name}) -n test-egress -o jsonpath='{.spec.containers[*].name}'
+~~~
+12.在 default 命名空间中创建一个与 sleep pod 类似的目标规则，用来引导 test-egress 命名空间内的流量经过 egress 网关
+~~~yaml
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: egressgateway-for-cnn
+spec:
+  host: istio-egressgateway.istio-system.svc.cluster.local
+  subsets:
+  - name: cnn
+~~~
+13.向 https://edition.cnn.com/politics 发送 HTTP 请求，这次会成功，原因是网络策略允许流量流向 istio-system 
+中的 istio-egressgateway。 istio-egressgateway 最终把流量转发到 edition.cnn.com
+~~~shell
+kubectl exec -it $(kubectl get pod -n test-egress -l app=sleep -o jsonpath={.items..metadata.name}) -n test-egress -c sleep -- curl -s -o /dev/null -w "%{http_code}\n" https://edition.cnn.com/politics
+#200
+~~~
