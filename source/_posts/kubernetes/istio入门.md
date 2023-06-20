@@ -1,10 +1,12 @@
 ---
 title: istio入门
 categories: kubernetes
-tags: 
-- kubernetes
-- istio
+tags:
+  - kubernetes
+  - istio
+date: 2023-06-20 08:14:34
 ---
+
 ##简单部署及开放入口
 ### 安装
 minikube安装
