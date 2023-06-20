@@ -2,9 +2,11 @@
 title: istio配置
 categories: kubenetes
 tags:
-- kubernetes
-- istio
+  - kubernetes
+  - istio
+date: 2023-06-20 13:40:32
 ---
+
 ## Gateway
 > https://istio.io/latest/zh/docs/reference/config/networking/gateway/
 
