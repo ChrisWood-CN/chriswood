@@ -2,7 +2,9 @@
 title: md数学公式编辑
 categories: markdown
 tags: markdown
+date: 2023-06-21 14:41:12
 ---
+
 ## 公式插入
 行内公式
 ~~~text
