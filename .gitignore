@@ -1,5 +1,6 @@
 .DS_Store
 .idea
+.vscode
 Thumbs.db
 db.json
 *.log
