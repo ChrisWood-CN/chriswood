@@ -138,3 +138,22 @@ https://kubernetes.oss-cn-hangzhou.aliyuncs.com/charts
 #微软镜像
 http://mirror.azure.cn/kubernetes/charts
 ~~~
+## ns刪除后一直处于terminating状态
+~~~shell
+#通过apiserver服务的api来进行删除
+kubectl get ns xxx-system -o json > tmp.json
+kubectl get ns cattle-impersonation-system -o json > tmp.json
+vim tmp.json
+kubectl proxy --port=8001
+curl -k -H "Content-Type: application/json" -X PUT --data-binary @tmp.json http://127.0.0.1:8001/api/v1/namespaces/xxx-system/finalize
+curl -k -H "Content-Type: application/json" -X PUT --data-binary @tmp.json http://127.0.0.1:8001/api/v1/namespaces/cattle-impersonation-system/finalize
+~~~
+~~~
+//spec 中 finalizers删除
+"spec": {
+    "finalizers": [
+        "kubernetes"
+    ]
+},
+//"metadata 中 finalizers 删除
+~~~
