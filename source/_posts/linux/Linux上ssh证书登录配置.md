@@ -1,10 +1,10 @@
 ---
-title: linux上ssh证书登录配置
+title: Linux上ssh证书登录配置
 date: 2023-08-17 07:55:08
-categories: linux
+categories: Linux
 tags:
 - ssh
-- linux
+- Linux
 ---
 centos的ssh证书登录
 ~~~shell
