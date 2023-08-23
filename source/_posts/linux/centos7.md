@@ -6,6 +6,15 @@ tags:
 - centos7
 - Linux
 ---
+## CentOS7.9安装
+### 下载地址
+https://mirrors.aliyun.com/centos/7.9.2009/isos/x86_64/CentOS-7-x86_64-DVD-2009.iso
+### balenaEtcher
+https://etcher.balena.io/
+### Install CentOS 7
+sudo yum update
+sudo reboot
+sudo init 6 应用新的内核升级
 ##查询端口占用线程
 ~~~shell
 netstat -tunlp | grep 端口号
