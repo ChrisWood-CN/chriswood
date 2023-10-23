@@ -7,7 +7,10 @@
     "clean": "hexo clean",
     "deploy": "hexo deploy",
     "server": "hexo server",
-    "test": "hexo clean & hexo generate & hexo server"
+    "test": "hexo clean & hexo generate & hexo server",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs"
   },
   "hexo": {
     "version": "6.3.0"
@@ -23,6 +26,7 @@
     "hexo-renderer-stylus": "^2.1.0",
     "hexo-server": "^3.0.0",
     "hexo-theme-aurora": "^1.5.5",
-    "hexo-theme-landscape": "^0.0.3"
+    "hexo-theme-landscape": "^0.0.3",
+    "vitepress": "^1.0.0-rc.23"
   }
 }
