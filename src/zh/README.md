@@ -2,11 +2,12 @@
 home: true
 layout: BlogHome
 icon: home
-title: 博客主页
-heroImage: /assets/images/banner.jpg
-heroText: 你博客的名称
+title: 主页
+bgImage: /assets/images/banner.jpg
+bgImageDark: /assets/images/banner-dark.jpg
+heroText: 个人博客
 heroFullScreen: true
-tagline: 你可以在这里放置你的口号与标语
+tagline: 吃好，喝好，睡好，烦恼远离。
 projects:
   - icon: project
     name: 项目名称
@@ -37,8 +38,6 @@ projects:
     name: 自定义项目
     desc: 自定义详细介绍
     link: https://你的自定义链接
-
-footer: 自定义你的页脚文字
 ---
 
 这是一个博客主页的案例。

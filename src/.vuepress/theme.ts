@@ -7,55 +7,30 @@ export default hopeTheme({
   hostname: "https://mister-hope.github.io",
 
   author: {
-    name: "Mr.Hope",
-    url: "https://mister-hope.com",
+    name: "chriswoodcn",
   },
 
-  iconAssets: "fontawesome-with-brands",
+  iconAssets: "iconify",
 
-  logo: "https://theme-hope-assets.vuejs.press/logo.svg",
+  logo: "logo.png",
 
-  repo: "vuepress-theme-hope/vuepress-theme-hope",
+  // repo: "vuepress-theme-hope/vuepress-theme-hope",
 
   docsDir: "src",
 
+  navbarLayout: {
+    start: ["Brand", "Search"],
+    end: ["Links", "Language", "Repo", "Outlook"],
+  },
+
   blog: {
     medias: {
-      Baidu: "https://example.com",
-      BiliBili: "https://example.com",
-      Bitbucket: "https://example.com",
-      Dingding: "https://example.com",
-      Discord: "https://example.com",
-      Dribbble: "https://example.com",
-      Email: "mailto:info@example.com",
-      Evernote: "https://example.com",
+      Email: "chriswoodcn@aliyun.com",
       Facebook: "https://example.com",
-      Flipboard: "https://example.com",
       Gitee: "https://example.com",
       GitHub: "https://example.com",
-      Gitlab: "https://example.com",
       Gmail: "mailto:info@example.com",
-      Instagram: "https://example.com",
-      Lark: "https://example.com",
-      Lines: "https://example.com",
-      Linkedin: "https://example.com",
-      Pinterest: "https://example.com",
-      Pocket: "https://example.com",
       QQ: "https://example.com",
-      Qzone: "https://example.com",
-      Reddit: "https://example.com",
-      Rss: "https://example.com",
-      Steam: "https://example.com",
-      Twitter: "https://example.com",
-      Wechat: "https://example.com",
-      Weibo: "https://example.com",
-      Whatsapp: "https://example.com",
-      Youtube: "https://example.com",
-      Zhihu: "https://example.com",
-      VuePressThemeHope: {
-        icon: "https://theme-hope-assets.vuejs.press/logo.svg",
-        link: "https://theme-hope.vuejs.press",
-      },
     },
   },
 
@@ -67,12 +42,13 @@ export default hopeTheme({
       // sidebar
       sidebar: enSidebar,
 
-      footer: "Default footer",
-
+      copyright: "<div>Copyright &copy; 2024 Chris Wood, All Rights Reserved.<div>",
       displayFooter: true,
 
       blog: {
-        description: "A FrontEnd programmer",
+        avatar: '/assets/images/avatar.png',
+        name: "Chris Wood",
+        description: "An all-around athlete, but not a skater in any way.",
         intro: "/intro.html",
       },
 
@@ -91,12 +67,13 @@ export default hopeTheme({
       // sidebar
       sidebar: zhSidebar,
 
-      footer: "默认页脚",
-
+      copyright: "<div>Copyright &copy; 2024 Chris Wood, All Rights Reserved.<div>",
       displayFooter: true,
 
       blog: {
-        description: "一个前端开发者",
+        avatar: '/assets/images/avatar.png',
+        name: "Chris Wood",
+        description: "一位全能选手,但每样都没有玩溜。",
         intro: "/zh/intro.html",
       },
 
@@ -119,6 +96,7 @@ export default hopeTheme({
 
   plugins: {
     blog: true,
+    searchPro: true,
 
     // Install @waline/client before enabling it
     // Note: This is for testing ONLY!

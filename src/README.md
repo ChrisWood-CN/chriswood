@@ -2,10 +2,11 @@
 home: true
 layout: BlogHome
 icon: home
-title: Blog Home
+title: Home
 bgImage: /assets/images/banner.jpg
-heroText: 
-tagline: 吃好，喝好，睡好，烦恼远离。
+bgImageDark: /assets/images/banner-dark.jpg
+heroText: Private Blog
+tagline: Eat well, drink well, sleep well, and stay away from worries。
 heroFullScreen: true
 projects:
   - icon: project
@@ -37,8 +38,6 @@ projects:
     name: custom item
     desc: Detailed description of this custom item
     link: https://link.to.your.friend
-
-footer: customize your footer text
 ---
 
 This is a blog home page demo.
