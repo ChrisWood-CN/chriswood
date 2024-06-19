@@ -1,12 +1,4 @@
-.DS_Store
-.idea
-.vscode
-Thumbs.db
-db.json
-*.log
 node_modules/
-public/
-.deploy*/
-_multiconfig.yml
-package-lock.json
-yarn.lock
+src/.vuepress/.cache/
+src/.vuepress/.temp/
+src/.vuepress/dist/
