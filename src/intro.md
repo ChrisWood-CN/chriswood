@@ -1,7 +1,6 @@
 ---
 icon: circle-info
-cover: /assets/images/cover3.jpg
-avatar: /assets/images/avatar.png
+cover: /assets/images/cover1.jpg
 ---
 
 # Intro Page

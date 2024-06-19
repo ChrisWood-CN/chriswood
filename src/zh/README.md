@@ -9,10 +9,10 @@ heroText: 个人博客
 heroFullScreen: true
 tagline: 吃好，喝好，睡好，烦恼远离。
 projects:
-  - icon: project
-    name: 项目名称
-    desc: 项目详细描述
-    link: https://你的项目链接
+  - icon: eos-icons:env
+    name: 环境配置
+    desc: 环境配置
+    link: /posts/env/*
 
   - icon: link
     name: 链接名称
