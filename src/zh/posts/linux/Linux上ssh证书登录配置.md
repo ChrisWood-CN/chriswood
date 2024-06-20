@@ -8,7 +8,7 @@ tags:
   - Linux
 ---
 
-# centos7 配置 ssh 证书登录
+## centos7 配置 ssh 证书登录
 
 1.在/root/.ssh 目录下创建 rsa 密钥对，生成的 id_rsa（私钥）下载到本地，证书登录时需要用，id_rsa.pub（公钥）
 
@@ -61,7 +61,7 @@ AuthorizedKeysFile ~/.ssh/authorized_keys
 systemctl restart sshd
 ```
 
-# ubuntu 配置 ssh 证书登录
+## ubuntu20.04 配置 ssh 证书登录
 
 1.安装 ssh 服务
 
@@ -74,7 +74,7 @@ sudo ufw allow ssh
 
 2.剩余步骤参考 [centos7 配置 ssh 证书登录](#centos7配置ssh证书登录)
 
-### 参考
+## 参考
 
 1. [https://blog.csdn.net/zhangweixbl4/article/details/135106258](https://blog.csdn.net/zhangweixbl4/article/details/135106258)
 2. [https://www.jianshu.com/p/6e8d70c4d820](https://www.jianshu.com/p/6e8d70c4d820)
