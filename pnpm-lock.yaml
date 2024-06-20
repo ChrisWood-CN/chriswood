@@ -8,18 +8,24 @@ devDependencies:
   '@vuepress/bundler-vite':
     specifier: 2.0.0-rc.13
     version: 2.0.0-rc.13
+  kotlin-playground:
+    specifier: ^1.30.0
+    version: 1.30.0
   vue:
     specifier: ^3.4.27
     version: 3.4.29
   vuepress:
     specifier: 2.0.0-rc.13
     version: 2.0.0-rc.13(@vuepress/bundler-vite@2.0.0-rc.13)(vue@3.4.29)
+  vuepress-plugin-md-enhance:
+    specifier: 2.0.0-rc.49
+    version: 2.0.0-rc.49(kotlin-playground@1.30.0)(markdown-it@14.1.0)(vuepress@2.0.0-rc.13)
   vuepress-plugin-search-pro:
     specifier: 2.0.0-rc.49
     version: 2.0.0-rc.49(vuepress@2.0.0-rc.13)
   vuepress-theme-hope:
     specifier: 2.0.0-rc.49
-    version: 2.0.0-rc.49(markdown-it@14.1.0)(vuepress-plugin-search-pro@2.0.0-rc.49)(vuepress@2.0.0-rc.13)
+    version: 2.0.0-rc.49(kotlin-playground@1.30.0)(markdown-it@14.1.0)(vuepress-plugin-search-pro@2.0.0-rc.49)(vuepress@2.0.0-rc.13)
 
 packages:
 
@@ -2031,6 +2037,10 @@ packages:
     engines: {node: '>=0.10.0'}
     dev: true
 
+  /kotlin-playground@1.30.0:
+    resolution: {integrity: sha512-E9GL84eYBq7D8o8vHm0JKt5Je3ZtNfqZVvwvWEtSmNcjf4iBiJ0i3rsnIRJwVMcjaoeGNmuKTJT3ReKKaGBRjw==}
+    dev: true
+
   /lilconfig@3.1.2:
     resolution: {integrity: sha512-eop+wDAvpItUys0FWkHIKeC9ybYrTGbU41U5K7+bttZZeohvnY7M9dZ5kB21GNWiFT2q1OoPTvncPCgSOVO5ow==}
     engines: {node: '>=14'}
@@ -2691,7 +2701,7 @@ packages:
       - typescript
     dev: true
 
-  /vuepress-plugin-md-enhance@2.0.0-rc.49(markdown-it@14.1.0)(vuepress@2.0.0-rc.13):
+  /vuepress-plugin-md-enhance@2.0.0-rc.49(kotlin-playground@1.30.0)(markdown-it@14.1.0)(vuepress@2.0.0-rc.13):
     resolution: {integrity: sha512-KpTwYsq91T3sywFYKTYbGKFBshnMSg/HZtrMImvoQzqoFuRIuWR6xPZszG1mJJ+ahajFB5Vzkrhec/u6TVs9JA==}
     engines: {node: '>=18.19.0', npm: '>=8', pnpm: '>=7', yarn: '>=2'}
     peerDependencies:
@@ -2772,6 +2782,7 @@ packages:
       '@vueuse/core': 10.11.0(vue@3.4.29)
       balloon-css: 1.2.0
       js-yaml: 4.1.0
+      kotlin-playground: 1.30.0
       vue: 3.4.29
       vuepress: 2.0.0-rc.13(@vuepress/bundler-vite@2.0.0-rc.13)(vue@3.4.29)
       vuepress-shared: 2.0.0-rc.49(vuepress@2.0.0-rc.13)
@@ -2826,7 +2837,7 @@ packages:
       - typescript
     dev: true
 
-  /vuepress-theme-hope@2.0.0-rc.49(markdown-it@14.1.0)(vuepress-plugin-search-pro@2.0.0-rc.49)(vuepress@2.0.0-rc.13):
+  /vuepress-theme-hope@2.0.0-rc.49(kotlin-playground@1.30.0)(markdown-it@14.1.0)(vuepress-plugin-search-pro@2.0.0-rc.49)(vuepress@2.0.0-rc.13):
     resolution: {integrity: sha512-OiWqxBWRpd2g8BV8ODe9Xqxxcvv0l38eyzjtnOXGnL8WAJ0RmHKFpSHHXtTKN5coaEyJb3wK7k4CCBO5RTYCiw==}
     engines: {node: '>=18.19.0', npm: '>=8', pnpm: '>=7', yarn: '>=2'}
     peerDependencies:
@@ -2890,7 +2901,7 @@ packages:
       vue: 3.4.29
       vuepress: 2.0.0-rc.13(@vuepress/bundler-vite@2.0.0-rc.13)(vue@3.4.29)
       vuepress-plugin-components: 2.0.0-rc.49(vuepress@2.0.0-rc.13)
-      vuepress-plugin-md-enhance: 2.0.0-rc.49(markdown-it@14.1.0)(vuepress@2.0.0-rc.13)
+      vuepress-plugin-md-enhance: 2.0.0-rc.49(kotlin-playground@1.30.0)(markdown-it@14.1.0)(vuepress@2.0.0-rc.13)
       vuepress-plugin-search-pro: 2.0.0-rc.49(vuepress@2.0.0-rc.13)
       vuepress-shared: 2.0.0-rc.49(vuepress@2.0.0-rc.13)
     transitivePeerDependencies:

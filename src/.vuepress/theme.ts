@@ -142,6 +142,7 @@ export default hopeTheme({
       tabs: true,
       tasklist: true,
       vPre: true,
+      kotlinPlayground: true,
 
       // install chart.js before enabling it
       // chart: true,

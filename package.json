@@ -12,8 +12,10 @@
   },
   "devDependencies": {
     "@vuepress/bundler-vite": "2.0.0-rc.13",
+    "kotlin-playground": "^1.30.0",
     "vue": "^3.4.27",
     "vuepress": "2.0.0-rc.13",
+    "vuepress-plugin-md-enhance": "2.0.0-rc.49",
     "vuepress-plugin-search-pro": "2.0.0-rc.49",
     "vuepress-theme-hope": "2.0.0-rc.49"
   }
