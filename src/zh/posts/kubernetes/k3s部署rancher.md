@@ -78,7 +78,9 @@ sed -i 's/SELINUX=enforcing/SELINUX=disabled/' /etc/selinux/config
 #curl -sfL https://rancher-mirror.rancher.cn/k3s/k3s-install.sh | INSTALL_K3S_MIRROR=cn INSTALL_K3S_VERSION=v1.21.14+k3s1 sh -
 #curl -sfL https://rancher-mirror.rancher.cn/k3s/k3s-install.sh | INSTALL_K3S_MIRROR=cn INSTALL_K3S_VERSION=v1.25.11+k3s1 sh -
 # k3s安装的registry使用国内镜像地址 同时写kubeconfig
-# curl -sfL https://rancher-mirror.oss-cn-beijing.aliyuncs.com/k3s/k3s-install.sh | INSTALL_K3S_MIRROR=cn INSTALL_K3S_VERSION=v1.28.10+k3s1 sh -s - --system-default-registry "registry.cn-hangzhou.aliyuncs.com" --write-kubeconfig ~/.kube/config --write-kubeconfig-mode 666 --disable traefik
+# curl -sfL https://rancher-mirror.oss-cn-beijing.aliyuncs.com/k3s/k3s-install.sh | INSTALL_K3S_MIRROR=cn INSTALL_K3S_VERSION=v1.30.4+k3s1 sh -s - --system-default-registry "registry.cn-hangzhou.aliyuncs.com" --write-kubeconfig ~/.kube/config --write-kubeconfig-mode 666 --disable traefik
+# 20240919使用v1.30.4+k3s1版本
+sudo curl –sfL https://rancher-mirror.rancher.cn/k3s/k3s-install.sh | INSTALL_K3S_MIRROR=cn INSTALL_K3S_VERSION=v1.30.4+k3s1 sh -s - --system-default-registry "registry.cn-hangzhou.aliyuncs.com" --write-kubeconfig ~/.kube/config --write-kubeconfig-mode 666 --disable traefik
 ~~~
 #### 卸载k3s
 ~~~shell
